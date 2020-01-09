@@ -17,7 +17,7 @@ class CLeaner:
         stmts = self.parse_sql("tableCreation.sql")
         for stmt in stmts:
             cursor.execute(stmt)
-        cursor.execute("INSERT INTO sport (nom) VALUES ('Football')")
+        cursor.execute("INSERT INTO sport (nom) VALUES ('Football'),('Rugby'),('Basketball'), ('Tennis')")
         cursor.execute("INSERT INTO bookmaker (nom) VALUES ('Winamax')")
         self.connection.commit()
 

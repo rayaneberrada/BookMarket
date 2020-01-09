@@ -18,7 +18,7 @@ CREATE TABLE sport (
 CREATE TABLE rencontre (
                 id INT AUTO_INCREMENT NOT NULL,
                 competition VARCHAR(255) NOT NULL,
-                cote_match_nul DECIMAL(10,2) NOT NULL,
+                cote_match_nul DECIMAL(10,2),
                 equipe_domicile VARCHAR(255) NOT NULL,
                 cote_domicile DECIMAL(10,2) NOT NULL,
                 equipe_exterieure VARCHAR(255) NOT NULL,
