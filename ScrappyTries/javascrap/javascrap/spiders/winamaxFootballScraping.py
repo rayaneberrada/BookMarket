@@ -43,6 +43,9 @@ class WinamaxrugbySpider(scrapy.Spider):
                                              headers={"User-Agent":"berradarayane@gmail.com"})
 
     def parse_matches(self, response, competition, region):
+        """
+        Extract the datas about a match that will be added to the database
+        """
         item = MatchItem()
         datas = self.turn_to_json(response)
         matches = datas["tournaments"][competition]["matches"]
@@ -55,7 +58,6 @@ class WinamaxrugbySpider(scrapy.Spider):
 
             if "tvChannels" in match_datas:
                 item["broadcasters"] = match_datas["tvChannels"] 
-                #(voir situation avec plusieurs diffuseurs)
             else:
                 item["broadcasters"] = None
 
@@ -64,8 +66,6 @@ class WinamaxrugbySpider(scrapy.Spider):
             item["bookmaker"] = "Winamax"
             item["league"] = datas["tournaments"][competition]["tournamentName"]
             item["playing_time"] = datetime.datetime.fromtimestamp(match_datas["matchStart"]).strftime('%Y-%m-%d %H:%M:%S')
-
-            #Améliorer l'affichage de la date
 
             bet_id = str(match_datas["mainBetId"])
             odds_id = datas["bets"][bet_id]["outcomes"]
@@ -87,6 +87,10 @@ class WinamaxrugbySpider(scrapy.Spider):
             yield item
 
     def turn_to_json(self, response):
+        """
+        When a request is made, the datas are hard coded in the javascript of the html page.
+        To make it easier to parse, the javascript and the datas needed are turned into json.
+        """
         datas = response.xpath('//script//text()').getall()
         #All the necessary datas are inside the script tags of the html
         datas = "".join(datas)

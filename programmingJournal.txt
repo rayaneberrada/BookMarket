@@ -1,0 +1,103 @@
+TO DO:
+Vérifier dans quelle mesure on peut scrapper ou non le rugby et le basket sans changer le code
+Ecrire les tests
+Tester la V sur tléphone
+Improve objects introspection and see pprint doc
+Implémenter les affichages de notre applicatio navec Kivy
+Améliorer API, voir pour les images et logos
+
+Améliorer spider:
+	faire en sorte qu'il y ai une relation qui soit créée entre un match et son précédent pari (peut être utilisée les id des matchs pour leur donner une référence unique (changer du coup MPD)
+	Voir exactement ce qu'est l'erreur code is o, cette erreur doit être résolue
+	Améliorer l'exception levée en cas de label d'odd non correspondante
+	implémenter un compteur pour s'assurer que tous les éléments ont été ajoutés en bdd (?)
+	AJouter le fait que si date affrontemente avant date scraping, ne pas yield l'element
+	créer une sorte de dicitonnaire d'erreurs pour pouvoir constater rapidement les problèmes
+	Ajouter le nom de la region pour la competition quand ligue des champions etc sinon on se retrouve dans competition avec des noms de groupe sans référence à la compétition elle meme
+	créer tests 
+	vérifier pep8
+	peut être stocker les régions et compétitions dans des ligues à part pour simplifier l'api et mieux organiser les données
+
+Améliorer API:
+	Il faudra ensuite renvoyer la meilleur cote et le diffuseur associé
+	Ecrire tests
+	Gérer les erreurs
+	créer un système de clef pour faire les requêtes ?(Voir cours api du gros cours de flask)
+
+voir pour créer des graphique avec les données récupérées avec matplotlib et comment gérer leur stockage sur le serveur. (Est-il trop lourd de le faire en bdd?)
+
+Exemple de représenation:
+https://www.youtube.com/watch?v=xoA8aiGrkbw
+
+deploiement sur android et ios:
+http://www.albertgao.xyz/2017/06/14/how-to-deploy-kivy-app-to-ios-and-android/
+
+PROBLEM TO SOLVE:
+	- Comment doit fonctionner le scraper dans le cas où aucun match n'existe au moment du scrap?Les sites fournissent-ils une key vide ou pas d'informations du tout
+	- Comment l'application va-t-elle réagir quand les paris seront en live? (modification à faier pour être sûr que l'utilisateru ne recoive pas d'alerte durant la phase de live?)
+	- L'application va-t-elle continuer à faire des requête et tenir à jour l'utilisateur en cas d'alerte atteinte pour une côte qu'il a spécifié, ou cela ne se fera-t-il que
+si l'utilisateur est directement sur l'application? (Il faut que des requêtes soient faites de manière régulière pour les paris ajouté en alert)
+	- Certaines équipes ne sont pas appelées de la même facon entre les bookmakers ( exemple: Saint Etienne (winamax) / St Etienne (parions sport) ). Lever une exception
+qui me préviendra si un cas de figure d'un match sans correspondance est trouvé
+	- S'assurer que les noms, logos, éléments affichés n'empiètent pas les uns sur les autres
+	- Vérifier que toutes les informations nécessaires à l'application peuvent être récupérées
+	- VOir comment stocker les choix utilisateur
+	- S'assurer que en choisissant all regions on ne puisse pas sélectionner d'autres régions
+
+Idées d'amélioration:
+	- Permettre aux utilisateurs de parier de la'rgent virtuel pour tester l'évolution de leur bankroll
+
+Football scrap:
+
+il faut d'abord récupér la liste des régions et la liste des compétitions
+Pour chaque catégorie:
+	on récupère category name
+	on récupère matches id
+	pour chaque id de matches id:
+		on récupère mainbetId
+		on récupère tv channels
+		on récupère competitor1 et 2
+		on récupère matchStart converti via timsestamp
+		pour chaque outcomes de maintbetid:
+			on récupère le label
+			si label est égal à competitor1:
+				competitor1 odd égal ouctomes odd 
+			si label est égal à competitor2:
+				competitor2 odd égal outcomes odd
+			si label est égal à competitor3
+				competitor3 odd égal ouctomes odd
+			sinon:
+				raise une exception
+
+
+
+problem to check:
+Warning: 64833011: isn't a match because code is x and not 1, 2 or X 206147575,206147581,206147587
+Warning: 64842922: isn't a match because code is x and not 1, 2 or X
+Warning: 52660904: isn't a match because code is Paris Saint Germain and not 1, 2 or X
+Warning: 53830260: isn't a match because code is Paris Saint Germain and not 1, 2 or X
+Warning: 53083942: isn't a match because code is 0 and not 1, 2 or X
+Warning: 48655741: isn't a match because code is Manchester City and not 1, 2 or X
+Warning: 49310111: isn't a match because code is Manchester City and not 1, 2 or X
+Warning: 53126112: isn't a match because code is 0 and not 1, 2 or X
+Warning: 64762290: isn't a match because code is Over and not 1, 2 or X
+Warning: 51343116: isn't a match because code is Manchester United and not 1, 2 or X
+Warning: 64832707: isn't a match because code is o and not 1, 2 or X https://www.winamax.fr/paris-sportifs/sports/1/35/39
+
+code is over:
+https://www.winamax.fr/paris-sportifs/sports/1/31/33
+58389930
+
+code is o:
+https://www.winamax.fr/paris-sportifs/sports/1/131/904
+64842689
+
+
+
+https://www.winamax.fr/paris-sportifs/sports/1/7/900002742
+[179546845,179546846,179546847,179546848,179546849,179546850]
+
+Logique kivy:
+Requêter les informations nécessaires
+Créer un widget pour le titre et un pour le bas (couleur: #6d9eebff)
+créer pour chaque info un grid dans gridlayout en plus de deux grids de bases que seront favoris et alerts (couleur widgets: #c9daf8ff, couleur barre d'encadrement #d3d3d3ff)
