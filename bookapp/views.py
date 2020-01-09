@@ -20,10 +20,10 @@ def sports():
     cursor = connection.cursor()
     cursor.execute("SELECT nom, id FROM sport")
     rows = cursor.fetchall()
-    return jsonify(rows)
+    return jsonify(sports=rows)
 
-@app.route('/rencontres/<int:sport_id>/regions', methods=['GET'])
-def regions(sport_id):
+@app.route('/rencontres/<sport_name>/regions', methods=['GET'])
+def regions(sport_name):
     """
     When appurl/rencontres/<int:sport_id>/regions is requested, depending of the number used in sport_id
     parameter, the regions names related to the sport which match this id will be sent in a json format
@@ -37,14 +37,15 @@ def regions(sport_id):
 
     parameters = request.args
     cursor = connection.cursor()
+    sport_id = cursor.execute("SELECT id FROM sport WHERE nom=%s", sport_name)
     cursor.execute("SELECT DISTINCT region FROM rencontre WHERE sport_id=%s", sport_id)
     rows = cursor.fetchall()
     datas = []
     for row in rows:
         datas.append(row["region"])
-    return jsonify(region=datas)
+    return jsonify(regions=datas)
 
-@app.route('/rencontres/competition', methods=['GET'])
+@app.route('/rencontres/competitions', methods=['GET'])
 def competition():
     connection = pymysql.connect(host='localhost',
                      user='rayane',
@@ -102,9 +103,9 @@ def rencontre():
     rows = cursor.fetchall()
     datas = []
     for row in rows:
-        datas.append([str(row["cote_match_nul"]),row["equipe_domicile"], str(row["cote_domicile"]),\
-                    row["equipe_exterieure"], str(row["cote_exterieure"]), row["date_affrontement"],\
-                    row["diffuseur"]])
+        datas.append({"cote_nul" : str(row["cote_match_nul"]),"domicile" : row["equipe_domicile"], "cote_dom" :str(row["cote_domicile"]),\
+                    "exterieur" : row["equipe_exterieure"], "cote_ext" : str(row["cote_exterieure"]), "date" : row["date_affrontement"],\
+                    "tv" : row["diffuseur"]})
         #Voir si on garde les cotes au format string car jsonify n'accepte pas les decimal
     return jsonify(matches=datas)
 

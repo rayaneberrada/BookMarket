@@ -9,6 +9,7 @@ verify_ssl = true
 scrapy = "*"
 pymysql = "*"
 flask = "*"
+kivy = "*"
 
 [requires]
 python_version = "3.6"
