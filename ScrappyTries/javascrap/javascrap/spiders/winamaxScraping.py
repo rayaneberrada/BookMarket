@@ -70,7 +70,7 @@ class WinamaxrugbySpider(scrapy.Spider):
             item["url"] = response.url
             item["bookmaker"] = "Winamax"
             item["league"] = datas["tournaments"][competition]["tournamentName"]
-            item["playing_time"] = datetime.datetime.fromtimestamp(match_datas["matchStart"]).strftime('%Y-%m-%d %H:%M:%S')
+            item["playing_time"] = datetime.datetime.fromtimestamp(match_datas["matchStart"]).strftime('%Y-%m-%d %H:%M')
 
             bet_id = str(match_datas["mainBetId"])
             odds_id = datas["bets"][bet_id]["outcomes"]

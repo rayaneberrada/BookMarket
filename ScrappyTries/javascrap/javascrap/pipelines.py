@@ -28,12 +28,12 @@ class JavascrapPipeline(object):
                                 cote_domicile, equipe_exterieure, cote_exterieure,\
                                 sport_id, diffuseur, region, bookmaker_id,\
                                 date_affrontement, date_scraping)"
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s")
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
 
         datas = (item["league"], item["odd_draw"], item["home"],\
                 item["odd_home"], item["away"], item["odd_away"],\
                 sport, item["broadcasters"], item["region"], bookmaker,\
-                item["playing_time"])
+                item["playing_time"], item["time_scraped"])
         cursor.execute(sql, datas)
         connection.commit()
         return item
