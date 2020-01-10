@@ -1,24 +1,39 @@
+FONCTIONNEMENT:
+Au lieu d'un Trello, ce journal à pour but d'aider au suivi et à la réalisation du projet, ainsi que permettre à ses lecteurs de suivre l'évolution du projet et les étapes qui ont menées à sa réalisation.
+L'idée de l'utilisation de ce document n'ayant germée qu'en cours de réalisation du projet, de nombreuses étapes sont manquantes.L'idée est venue de l'insatisfaction rencontrée dans l'utilisation de Trello, trop abstraite, indirecte et encadrée, au lieu qu'un document texte qui faisait office de journal officieux me permettait d'écrire chaque fonctionnalité ou action qu'il me fallait réaliser pour avance dans mon projet. Cette méthode, en plus du google slide, satisfaisant à mon besoin de suivi pour le respect de la méthodologie agile, j'ai décidé de le lui donner une forme un peu plus rigoureuse qui évoluera probablement.
+Chaque thème est séparé d'une ligne, et son titre s'écrit en majuscules. Le premier s'appelle DONE et rappel ce qu'on trouve dans l'utilisation de cartes Trello.Ce thème récapitule les avancées/taches accomplies pour une journée donnée. Ce thème est vidé à chaque début de journée et les taches "DONE" peuvent être visualiées grace au commit journalier du document.
+Le thème TO DO regroupe les taches à accomplir, celle ce trouvant en haut de la pile étant généralement la prochaine sur la liste. Ce terme permet de savoir les prochaines étapes à suivre et de noter à l'envolé les prochaines à accomplir.
+Pour ce qui est des autres thèmes, ils sont librement définis, bien qu'il s'esquisse qu'un thème devrait englober chaque fonctionnalité majeur, étant une sorte de TO DO, enrichi de réflexions, pour une fonctionnalité particulière, ainsi qu'un thème plus général sur les problèmes qu'on entrevoit, ou qu'on a déjà rencontré sans qu'ils s'accompagnent d'une solution.
+DONE:
+implement the other sports (Tennis, Rugby, Basketball) for the winamax spider
+Get rid of the main issues raised while scraping matches (pages containing matches often also have a bet about winning the competition or something related that our parser doesn't like and we don't
+need for our app)
+Définir stratégie de récupération des données en bdd: On va récupérer pour chaque bookmaker les informations pour les matchs scrapés pour la date la plus récente
+Définir logique de de parsing des données pour Parions sport: On choisi la première clef o qu'on trouve, on récupère l'id de son parent m, la cote et l'équipe associée, 
+puis on enlève de notre dictionnaire la la clef o dont on vient de récupérer les données, on va ensuite pour chaque clef o ayant le même parent m récupérer la cote et l'équipe associée avant de les 
+supprimer.ENfin, à partir de m on pourra accéder au parent e, puis p, et récupérer les données restantes.
+
 TO DO:
-Vérifier dans quelle mesure on peut scrapper ou non le rugby et le basket sans changer le code
+Créer les spiders pour les autre sites
 Ecrire les tests
-Tester la V sur tléphone
+Tester la V1 sur tléphone
 Improve objects introspection and see pprint doc
 Implémenter les affichages de notre applicatio navec Kivy
 Améliorer API, voir pour les images et logos
 
-Améliorer spider:
-	faire en sorte qu'il y ai une relation qui soit créée entre un match et son précédent pari (peut être utilisée les id des matchs pour leur donner une référence unique (changer du coup MPD)
+AMELIORER SPIDER:
+	enregistrer le temps pour scrpaper ?
+	faire en sorte qu'il y ait une relation qui soit créée entre un match et son précédent pari (peut être utilisée les id des matchs pour leur donner une référence unique (changer du coup MPD)
 	Voir exactement ce qu'est l'erreur code is o, cette erreur doit être résolue
 	Améliorer l'exception levée en cas de label d'odd non correspondante
 	implémenter un compteur pour s'assurer que tous les éléments ont été ajoutés en bdd (?)
 	AJouter le fait que si date affrontemente avant date scraping, ne pas yield l'element
-	créer une sorte de dicitonnaire d'erreurs pour pouvoir constater rapidement les problèmes
 	Ajouter le nom de la region pour la competition quand ligue des champions etc sinon on se retrouve dans competition avec des noms de groupe sans référence à la compétition elle meme
 	créer tests 
 	vérifier pep8
 	peut être stocker les régions et compétitions dans des ligues à part pour simplifier l'api et mieux organiser les données
 
-Améliorer API:
+AMELIORER API:
 	Il faudra ensuite renvoyer la meilleur cote et le diffuseur associé
 	Ecrire tests
 	Gérer les erreurs
@@ -47,31 +62,10 @@ qui me préviendra si un cas de figure d'un match sans correspondance est trouv�
 Idées d'amélioration:
 	- Permettre aux utilisateurs de parier de la'rgent virtuel pour tester l'évolution de leur bankroll
 
-Football scrap:
-
-il faut d'abord récupér la liste des régions et la liste des compétitions
-Pour chaque catégorie:
-	on récupère category name
-	on récupère matches id
-	pour chaque id de matches id:
-		on récupère mainbetId
-		on récupère tv channels
-		on récupère competitor1 et 2
-		on récupère matchStart converti via timsestamp
-		pour chaque outcomes de maintbetid:
-			on récupère le label
-			si label est égal à competitor1:
-				competitor1 odd égal ouctomes odd 
-			si label est égal à competitor2:
-				competitor2 odd égal outcomes odd
-			si label est égal à competitor3
-				competitor3 odd égal ouctomes odd
-			sinon:
-				raise une exception
 
 
 
-problem to check:
+PROBLEM TO CHECK:
 Warning: 64833011: isn't a match because code is x and not 1, 2 or X 206147575,206147581,206147587
 Warning: 64842922: isn't a match because code is x and not 1, 2 or X
 Warning: 52660904: isn't a match because code is Paris Saint Germain and not 1, 2 or X
@@ -92,12 +86,6 @@ code is o:
 https://www.winamax.fr/paris-sportifs/sports/1/131/904
 64842689
 
-
-
 https://www.winamax.fr/paris-sportifs/sports/1/7/900002742
 [179546845,179546846,179546847,179546848,179546849,179546850]
 
-Logique kivy:
-Requêter les informations nécessaires
-Créer un widget pour le titre et un pour le bas (couleur: #6d9eebff)
-créer pour chaque info un grid dans gridlayout en plus de deux grids de bases que seront favoris et alerts (couleur widgets: #c9daf8ff, couleur barre d'encadrement #d3d3d3ff)

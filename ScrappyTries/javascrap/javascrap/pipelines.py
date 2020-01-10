@@ -28,7 +28,7 @@ class JavascrapPipeline(object):
                                 cote_domicile, equipe_exterieure, cote_exterieure,\
                                 sport_id, diffuseur, region, bookmaker_id,\
                                 date_affrontement, date_scraping)"
-            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())")
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s")
 
         datas = (item["league"], item["odd_draw"], item["home"],\
                 item["odd_home"], item["away"], item["odd_away"],\

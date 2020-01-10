@@ -18,7 +18,7 @@ class CLeaner:
         for stmt in stmts:
             cursor.execute(stmt)
         cursor.execute("INSERT INTO sport (nom) VALUES ('Football'),('Rugby'),('Basketball'), ('Tennis')")
-        cursor.execute("INSERT INTO bookmaker (nom) VALUES ('Winamax')")
+        cursor.execute("INSERT INTO bookmaker (nom) VALUES ('Winamax'),('Parions Sport')")
         self.connection.commit()
 
     def parse_sql(self, filename):
