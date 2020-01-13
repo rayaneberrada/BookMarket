@@ -4,16 +4,28 @@ L'idée de l'utilisation de ce document n'ayant germée qu'en cours de réalisat
 Chaque thème est séparé d'une ligne, et son titre s'écrit en majuscules. Le premier s'appelle DONE et rappel ce qu'on trouve dans l'utilisation de cartes Trello.Ce thème récapitule les avancées/taches accomplies pour une journée donnée. Ce thème est vidé à chaque début de journée et les taches "DONE" peuvent être visualiées grace au commit journalier du document.
 Le thème TO DO regroupe les taches à accomplir, celle ce trouvant en haut de la pile étant généralement la prochaine sur la liste. Ce terme permet de savoir les prochaines étapes à suivre et de noter à l'envolé les prochaines à accomplir.
 Pour ce qui est des autres thèmes, ils sont librement définis, bien qu'il s'esquisse qu'un thème devrait englober chaque fonctionnalité majeur, étant une sorte de TO DO, enrichi de réflexions, pour une fonctionnalité particulière, ainsi qu'un thème plus général sur les problèmes qu'on entrevoit, ou qu'on a déjà rencontré sans qu'ils s'accompagnent d'une solution.
+
 DONE:
-implement the other sports (Tennis, Rugby, Basketball) for the winamax spider
-Get rid of the main issues raised while scraping matches (pages containing matches often also have a bet about winning the competition or something related that our parser doesn't like and we don't
-need for our app)
-Définir stratégie de récupération des données en bdd: On va récupérer pour chaque bookmaker les informations pour les matchs scrapés pour la date la plus récente
-Définir logique de de parsing des données pour Parions sport: On choisi la première clef o qu'on trouve, on récupère l'id de son parent m, la cote et l'équipe associée, 
-puis on enlève de notre dictionnaire la la clef o dont on vient de récupérer les données, on va ensuite pour chaque clef o ayant le même parent m récupérer la cote et l'équipe associée avant de les 
-supprimer.ENfin, à partir de m on pourra accéder au parent e, puis p, et récupérer les données restantes.
+spider pour parions sport réalisée
+spider pour betclic réalisée
+mettre à jour Null dans region pour le mpd et le fichier cleanDatabase.py
+Documentation liée au scraping faite pour parions sport et betclic
+
 
 TO DO:
+Régler le problème liée à la différence d'heure pour l'horaire d'affrontement et faire attention au fait que changer l'horaire d'une heure, en fonction que
+si l'horaire est autour de 00h00, cela change aussi la date
+Avoir un outils pour comparer le nombre de match que renvoie chaque spider
+Voir pour parions sport si une solution automatique de récuparation des pages liées aux différents championnats est possible
+Programmer avec pycharm
+Créer spider pour betclic
+Ne pas utiliser le nom de la compétition ou des équipes pour comparer les cote entre différents bookmakers car il est fort probable que les noms ne soient pas toujours exactement similaires
+Verifier que les données scrapée sont bien à l'heure du match (décalage possiblement du au serveur qui envoie les infos)
+Indiquer les paris qui n'ont qu'un seul bookmaker
+Adapter le playing time entre chaque scraper ( parions sport ne fournit pas les secondes par exemple)
+Voir comment gérer les pages à appeler pour parions sport et leur évolution ( On ne peut pas automatiser la vérification d'équivalence entre les données récupérées et celle sur le site car elles
+sont générées dynamiquement, pas plus qu'on ne peut comparer d'un site à l'autre car tous les sites n'offrent pas toujours une cote pour un match ou pas en meme temps. Il faut donc trouver un moyen
+de lier toutes les entrées en bdd référencant un même match)
 Créer les spiders pour les autre sites
 Ecrire les tests
 Tester la V1 sur tléphone
@@ -21,7 +33,11 @@ Improve objects introspection and see pprint doc
 Implémenter les affichages de notre applicatio navec Kivy
 Améliorer API, voir pour les images et logos
 
-AMELIORER SPIDER:
+DOCUMENTATION:
+Amelioréer la doc pour les datas winamax
+
+Améliorer spider:
+	Check ce que datas["items"] erreur est
 	enregistrer le temps pour scrpaper ?
 	faire en sorte qu'il y ait une relation qui soit créée entre un match et son précédent pari (peut être utilisée les id des matchs pour leur donner une référence unique (changer du coup MPD)
 	Voir exactement ce qu'est l'erreur code is o, cette erreur doit être résolue
@@ -33,7 +49,7 @@ AMELIORER SPIDER:
 	vérifier pep8
 	peut être stocker les régions et compétitions dans des ligues à part pour simplifier l'api et mieux organiser les données
 
-AMELIORER API:
+Améliorer API:
 	Il faudra ensuite renvoyer la meilleur cote et le diffuseur associé
 	Ecrire tests
 	Gérer les erreurs
@@ -62,10 +78,42 @@ qui me préviendra si un cas de figure d'un match sans correspondance est trouv�
 Idées d'amélioration:
 	- Permettre aux utilisateurs de parier de la'rgent virtuel pour tester l'évolution de leur bankroll
 
+Football scrap:
+
+il faut d'abord récupér la liste des régions et la liste des compétitions
+Pour chaque catégorie:
+	on récupère category name
+	on récupère matches id
+	pour chaque id de matches id:
+		on récupère mainbetId
+		on récupère tv channels
+		on récupère competitor1 et 2
+		on récupère matchStart converti via timsestamp
+		pour chaque outcomes de maintbetid:
+			on récupère le label
+			si label est égal à competitor1:
+				competitor1 odd égal ouctomes odd 
+			si label est égal à competitor2:
+				competitor2 odd égal outcomes odd
+			si label est égal à competitor3
+				competitor3 odd égal ouctomes odd
+			sinon:
+				raise une exception
 
 
+Rugby scrap:
+id = '12'
+'categories': [800000112, 800000113, 800000111, 800000201, 800000335, 800000115, 800000109, 800000004, 800000443]
+pour region : 800000112
+'categoryName': 'Champions Cup'
+'tournaments': [41152, 35066, 35067, 35068, 35069, 35070]
+"matches":[19902204,19902206,78412]
+"19902204":{"mainBetId":65846495,"moreBets":1,"available":true,"score":"","period":"pre_match",
+"hlType":"to_come","status":"PREMATCH","title":"Leinster - Lyon OU","roundName":"5e journ\u00e9e",
+"tvChannels":"BEIN2","sportId":12,"categoryId":800000112,"tournamentId":35066,"competitor1Id":4210,
+"competitor1Name":"Leinster","competitor2Id":52812,"competitor2Name":"Lyon OU","matchStart":1578834000}
 
-PROBLEM TO CHECK:
+problem to check:
 Warning: 64833011: isn't a match because code is x and not 1, 2 or X 206147575,206147581,206147587
 Warning: 64842922: isn't a match because code is x and not 1, 2 or X
 Warning: 52660904: isn't a match because code is Paris Saint Germain and not 1, 2 or X
@@ -86,6 +134,12 @@ code is o:
 https://www.winamax.fr/paris-sportifs/sports/1/131/904
 64842689
 
+
+
 https://www.winamax.fr/paris-sportifs/sports/1/7/900002742
 [179546845,179546846,179546847,179546848,179546849,179546850]
 
+Logique kivy:
+Requêter les informations nécessaires
+Créer un widget pour le titre et un pour le bas (couleur: #6d9eebff)
+créer pour chaque info un grid dans gridlayout en plus de deux grids de bases que seront favoris et alerts (couleur widgets: #c9daf8ff, couleur barre d'encadrement #d3d3d3ff)

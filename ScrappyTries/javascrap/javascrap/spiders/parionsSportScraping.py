@@ -14,11 +14,11 @@ class ParionssportSpider(scrapy.Spider):
         self.start_time = time.time()
         football = ['p1555879','p22892','p22893','p22895','p22894','p22950','p22951','p22953','p22954','p22957','p22958','p22959','p71501','p22962','p22963','p22965','p22968','p22969','p22970','p22906','p33559','p265446','p80118','p22926','p22927','p22928','p22929','p1329846','p1329847','p740955','p22972','p58373992','p739665','p739666','p1574760','p1574763','p58371118','p58371119','p23048','p23051','p87835','p23061','p23075','p23080','p38806','p38803','p85875','p1258375','p23098','p39380','p23105','p23110','p23111','p23112','p39260','p23132','p23137']
         rugby = ['p23211','p25819','p1126766','p31802','p1061975','p1061976','p932019','p1053770','p1061982','p1060766','p1054627','p1490764','p23229','p1336053','p58254396','p58353570']
-        tennis = ['p58194873','p58367667','p58367669','p1632493,','p26370804','p58084423','p58086783','p58108668','p58194836','p58194829','p58194868','p58194869','p26363128','p58084564','p58086785','p58108610']
+        tennis = ['p58194873', 'p58377671', 'p58197786','p58367667','p58367669','p26370804','p58086783','p58194836','p58194829','p58194868','p58194869','p26363128','p58084564','p58086785','p58108610', 'p58198663', 'p1632493', 'p58084423', 'p58108668', 'p58377615', 'p58197785', 'p58198596']
         basket = ['p23189','p1542534','p23152','p280118','p1502660','p110369','p1528944','p23195','p1551127','p1621976','p23206','p361616','p23199','p1614079','p536659','p23203','p1312506','p47589','p82438']
-        sports = [football, tennis, basket, rugby]
-        headers =  {"X-LVS-HSToken" : "hIe1k7-Q3V-irF4VwYDAwI09GAu0k3oCNB3MlIisnjeky4qofJMNXiNhs4gJDUhB43oIG5wNhT4Gx9f-8NOJW2lhogL5tfhkNIAYfrSPcSfqgHZAZDoG9sG1yWFkGbJdRnBwd2EtcJnoPu3T32oC6Q=="
-    
+        sports = [tennis]
+        headers =  {"X-LVS-HSToken" : "hIe1k7-Q3V-irF4VwYDAwI09GAu0k3oCNB3MlIisnjeky4qofJMNXiNhs4gJDUhB43oIG5wNhT4Gx9f-8NOJW2lhogL5tfhkNIAYfrSPcSfqgHZAZDoG9sG1yWFkGbJdRnBwd2EtcJnoPu3T32oC6Q==",
+                    "User-Agent":"berradarayane@gmail.com"
         }
         for sport_urls in sports:
             for page in sport_urls:
@@ -27,6 +27,8 @@ class ParionssportSpider(scrapy.Spider):
     def parse(self, response):
         item = MatchItem()
         datas = json.loads(response.body)
+        if 'items' not in datas:
+            raise Warning('\033[31m' + "No matches for this league" + '\033[0m')
         betting_infos = datas["items"]
         odds_parsed = []
 

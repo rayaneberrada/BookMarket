@@ -36,4 +36,5 @@ class JavascrapPipeline(object):
                 item["playing_time"], item["time_scraped"])
         cursor.execute(sql, datas)
         connection.commit()
+        
         return item
