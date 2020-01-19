@@ -5,32 +5,32 @@ Chaque thème est séparé d'une ligne, et son titre s'écrit en majuscules. Le 
 Le thème TO DO regroupe les taches à accomplir, celle ce trouvant en haut de la pile étant généralement la prochaine sur la liste. Ce terme permet de savoir les prochaines étapes à suivre et de noter à l'envolé les prochaines à accomplir.
 Pour ce qui est des autres thèmes, ils sont librement définis, bien qu'il s'esquisse qu'un thème devrait englober chaque fonctionnalité majeur, étant une sorte de TO DO, enrichi de réflexions, pour une fonctionnalité particulière, ainsi qu'un thème plus général sur les problèmes qu'on entrevoit, ou qu'on a déjà rencontré sans qu'ils s'accompagnent d'une solution.
 
-DONE:
-spider pour parions sport réalisée
-spider pour betclic réalisée
-mettre à jour Null dans region pour le mpd et le fichier cleanDatabase.py
-Documentation liée au scraping faite pour parions sport et betclic
+MISE A JOUR IMPORTANTE:
+Seul le site winamax n'interdisant pas le scrapping de ses données dans à la fois robts.txt et ses cgu, l'application va devenir une plateforme permettant de parier virtuellement
 
+			
+
+DONE:
+Mettre à jour cote exterieure avec possibilité de nul et ajouter une table résultat
+Mettre a jour repo git en enlevant fichier non nécessaires
+Créer spider pour récupérer les résultats
 
 TO DO:
-Régler le problème liée à la différence d'heure pour l'horaire d'affrontement et faire attention au fait que changer l'horaire d'une heure, en fonction que
-si l'horaire est autour de 00h00, cela change aussi la date
-Avoir un outils pour comparer le nombre de match que renvoie chaque spider
+permettre à l'utilisateur d'enregistrer un pari sur son portable
+Faire une requête au lancement de l'appli pour vérifier si résultat / permettre à l'utilisateur de faire cette requête / et peut être aussi automatiser cette requête
+améliorer api et créer documentation
+Avoir un outils pour comparer le nombre de match que renvoie chaque spider et voir pour chaque sport le nombre de match avec des dates d'affrontement similaires
 Voir pour parions sport si une solution automatique de récuparation des pages liées aux différents championnats est possible
-Programmer avec pycharm
-Créer spider pour betclic
+Programmer avec pycharm*
 Ne pas utiliser le nom de la compétition ou des équipes pour comparer les cote entre différents bookmakers car il est fort probable que les noms ne soient pas toujours exactement similaires
-Verifier que les données scrapée sont bien à l'heure du match (décalage possiblement du au serveur qui envoie les infos)
 Indiquer les paris qui n'ont qu'un seul bookmaker
-Adapter le playing time entre chaque scraper ( parions sport ne fournit pas les secondes par exemple)
 Voir comment gérer les pages à appeler pour parions sport et leur évolution ( On ne peut pas automatiser la vérification d'équivalence entre les données récupérées et celle sur le site car elles
 sont générées dynamiquement, pas plus qu'on ne peut comparer d'un site à l'autre car tous les sites n'offrent pas toujours une cote pour un match ou pas en meme temps. Il faut donc trouver un moyen
 de lier toutes les entrées en bdd référencant un même match)
-Créer les spiders pour les autre sites
 Ecrire les tests
 Tester la V1 sur tléphone
+mettre le return items de pipeline en commentaire et à utiliser seulement en cas de debug
 Improve objects introspection and see pprint doc
-Implémenter les affichages de notre applicatio navec Kivy
 Améliorer API, voir pour les images et logos
 
 DOCUMENTATION:
@@ -143,3 +143,4 @@ Logique kivy:
 Requêter les informations nécessaires
 Créer un widget pour le titre et un pour le bas (couleur: #6d9eebff)
 créer pour chaque info un grid dans gridlayout en plus de deux grids de bases que seront favoris et alerts (couleur widgets: #c9daf8ff, couleur barre d'encadrement #d3d3d3ff)
+
