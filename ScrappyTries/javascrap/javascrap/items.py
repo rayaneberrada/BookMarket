@@ -23,3 +23,9 @@ class MatchItem(scrapy.Item):
 
     #Housekeping fields
     url = scrapy.Field()
+
+class ResultItem(scrapy.Item):
+    home = scrapy.Field()
+    away = scrapy.Field()
+    date = scrapy.Field()
+    result = scrapy.Field()
