@@ -1,4 +1,9 @@
 from kivy.uix.button import Button
+from kivy.uix.behaviors import ButtonBehavior 
+from kivy.uix.image import Image  
+from kivy.uix.recycleview import RecycleView
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.togglebutton import ToggleButton
 from kivy.app import App
 from functools import partial
@@ -10,20 +15,83 @@ from kivy.uix.widget import Widget
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 import urllib.parse
-from pprint import pprint
+import functools
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.properties import BooleanProperty
+from kivy.uix.recycleboxlayout import RecycleBoxLayout
+from kivy.uix.behaviors import FocusBehavior
+from kivy.uix.recycleview.layout import LayoutSelectionBehavior
+from kivy.uix.recyclegridlayout import RecycleGridLayout
 
-class Screen(GridLayout):
 
+class PageManager(Screen):
+    PAGE = 0
+    REQUEST_REGION = ""
+    REQUEST_MATCHES = ""
     def __init__(self, **kwargs):
-        super(Screen, self).__init__(**kwargs)
+        super(PageManager, self).__init__(**kwargs)
+        self.sport_page = None
+        self.region_page = None
+        self.league_page = None
+        self.match_page = None
+        self.submit = None
+        self.backward = None
+        self.create_view(None)
+
+    def create_view(self, choice):
+        if PageManager.PAGE == 0:
+            self.sport_page = SportPage(self.create_view)
+            self.ids.pages.add_widget(self.sport_page)
+            PageManager.PAGE += 1
+        elif PageManager.PAGE == 1:
+            self.ids.pages.remove_widget(self.sport_page)
+            self.region_page = RegionPage(choice)
+            self.submit = SubmitButton(self.create_view)
+            self.backward = GoBackward(self.previous_view)
+            self.ids.pages.add_widget(self.region_page)
+            self.ids.bottom.add_widget(self.submit)
+            self.ids.bottom.add_widget(self.backward)
+            PageManager.PAGE += 1
+        elif PageManager.PAGE == 2 and self.REQUEST_REGION != "":
+            self.ids.pages.remove_widget(self.region_page)
+            self.league_page = LeaguePage()
+            self.ids.pages.add_widget(self.league_page)
+            PageManager.PAGE += 1
+        elif PageManager.PAGE == 2 and self.REQUEST_REGION == "":
+            pass
+            # popup error window
+        elif PageManager.PAGE == 3 and self.REQUEST_MATCHES != "":
+            self.ids.pages.remove_widget(self.league_page)
+            self.ids.bottom.remove_widget(self.submit)
+            match_manager = MatchPage()
+            self.match_page = match_manager.create_grid_matches()
+            self.ids.pages.add_widget(self.match_page)
+            PageManager.PAGE += 1
+        elif PageManager.PAGE == 3 and self.REQUEST_MATCHES == "":
+            pass
+
+    def previous_view(self):
+        if PageManager.PAGE == 2:
+            self.ids.pages.remove_widget(self.region_page)
+            self.ids.bottom.remove_widget(self.submit)
+            self.ids.bottom.remove_widget(self.backward)
+            self.ids.pages.add_widget(self.sport_page)
+            PageManager.PAGE -= 1
+        elif PageManager.PAGE == 3:
+            self.ids.pages.remove_widget(self.league_page)
+            self.ids.pages.add_widget(self.region_page)
+            PageManager.PAGE -= 1
+        elif PageManager.PAGE == 4:
+            self.ids.pages.remove_widget(self.match_page)
+            self.ids.pages.add_widget(self.league_page)
+            self.ids.bottom.add_widget(self.submit)
+            PageManager.PAGE -= 1
+            # popup error window
         #----------------------------------------------
         #attributes used to navigate in the application
-        self.current_page = 0
-        self.url_request_sport = None
-        self.url_request_regions = None
-        self.url_request_leagues = None
-        self.request_arguments = ""
+
         #----------------------------------------------
+        """
         self.cols = 1 # Set columns for main layout
         self.tittle = Button(text="BookMarket", font_size=40, size_hint_y=None, height=Window.height/5)
         self.add_widget(self.tittle)
@@ -50,24 +118,7 @@ class Screen(GridLayout):
             requestCompetition = UrlRequest(self.url_request_leagues, self.parse_json)
             
 
-    def add_to_matches_request(self, button):
-        print(self.current_page)
-        if self.current_page == 2:
-            arg_to_search = "region="
-        elif self.current_page == 3:
-            arg_to_search = "competition="
-        if button.text in self.request_arguments:
-            args = self.request_arguments.split("&")
-            for arg in args:
-                if button.text in arg:
-                    args.remove(arg)
-            self.request_arguments = "&".join(args)
-        else:
-            if self.request_arguments:
-                self.request_arguments += "&" + arg_to_search + urllib.parse.quote(button.text)
-            else:
-                self.request_arguments += arg_to_search + urllib.parse.quote(button.text)
-        print(self.request_arguments)
+
 
     def create_submit_buttons(self):
         self.add_widget(self.inside)
@@ -103,103 +154,188 @@ class Screen(GridLayout):
         self.scrollinfos.bind(minimum_height=self.scrollinfos.setter('height'))
         self.informations.add_widget(self.scrollinfos)
     
-    def parse_json(self, req, result):
-        switcher = {
-                    0:"sports",
-                    1:"regions",
-                    2:"competitions",
-                    3:"matches"
-        }
-        data_searched = switcher.get(self.current_page)
-        for value in result[data_searched]:
-            if data_searched == "sports":
-                self.button = Button(text="{}".format(value['nom']), size_hint_y=None, height=Window.height/10)
-                self.button.bind(on_press=self.request_json)
-                self.scrollinfos.add_widget(self.button)
-                self.url_request_sport = req.url
-            elif data_searched == "regions":
-                self.button = ToggleButton(text="{}".format(value), size_hint_y=None, height=Window.height/10)
-                self.button.bind(on_press=self.add_to_matches_request)
-                self.scrollinfos.add_widget(self.button)
-                self.url_request_regions = req.url
-            elif data_searched == "competitions":
-                print(value)
-                self.button = ToggleButton(text="{}".format(value), size_hint_y=None, height=Window.height/10)
-                self.button.bind(on_press=self.add_to_matches_request)
-                self.scrollinfos.add_widget(self.button)
-                self.request_arguments = ""
-                self.url_request_leagues = req.url
-            elif data_searched == "matches":
-                self.create_match_display(value)
 
-        self.inside.add_widget(self.informations)
-        self.inside.add_widget(Widget())
-        self.create_submit_buttons()
-        self.current_page += 1
 
     def create_match_display(self, infos):
-        self.match = GridLayout(cols=1, size_hint_y=None, height=Window.height*(3/5))
-        self.first_row = " ".join([ x for x in [infos["date"], " ", infos["tv"]] if x is not None])
-        self.match.add_widget(Label(text=self.first_row))
-        self.second_row = GridLayout(cols=3)
-        self.second_row.add_widget(Label(text=str(infos["cote_dom"])))
-        self.second_row.add_widget(Label(text=str(infos["domicile"])))
-        self.second_row.add_widget(Label(text="RING"))
-        self.match.add_widget(self.second_row)
-        self.third_row = GridLayout(cols=3)
-        self.third_row.add_widget(Label(text=str(infos["cote_nul"])))
-        self.third_row.add_widget(Label(text="Nul"))
-        self.third_row.add_widget(Label(text="RING"))
-        self.match.add_widget(self.third_row)
-        self.forth_row = GridLayout(cols=3)
-        self.forth_row.add_widget(Label(text=str(infos["cote_ext"])))
-        self.forth_row.add_widget(Label(text=str(infos["exterieur"])))
-        self.forth_row.add_widget(Label(text="RING"))
-        self.match.add_widget(self.forth_row)
-        self.scrollinfos.add_widget(self.match)
+        match = GridLayout(cols=1, size_hint_y=None, height=Window.height*(3/5))
+        first_row = " ".join([ x for x in [infos["date"], " ", infos["tv"]] if x is not None])
+        match.add_widget(Label(text=first_row))
+        second_row = GridLayout(cols=3)
+        second_row.add_widget(Label(text=str(infos["cote_dom"])))
+        second_row.add_widget(Label(text=str(infos["domicile"])))
+        second_row.add_widget(Label(text="RING"))
+        match.add_widget(second_row)
+        third_row = GridLayout(cols=3)
+        third_row.add_widget(Label(text=str(infos["cote_nul"])))
+        third_row.add_widget(Label(text="Nul"))
+        third_row.add_widget(Label(text="RING"))
+        match.add_widget(third_row)
+        forth_row = GridLayout(cols=3)
+        forth_row.add_widget(Label(text=str(infos["cote_ext"])))
+        forth_row.add_widget(Label(text=str(infos["exterieur"])))
+        forth_row.add_widget(Label(text="RING"))
+        match.add_widget(forth_row)
+        self.scrollinfos.add_widget(match)
 
             
-
-    def request_json(self, button_infos):
-        if self.current_page == 0:
-            self.create_grid_for_json_datas()
-            requestCompetition = UrlRequest('http://127.0.0.1:5000/sports', self.parse_json)
-        elif self.current_page == 1:
-            self.clean_interface()
-            self.create_grid_for_json_datas()
-            requestRegions = UrlRequest('http://127.0.0.1:5000/rencontres/{}/regions'.format(button_infos.text), self.parse_json)
-        elif self.current_page == 2:
-            self.clean_interface()
-            self.create_grid_for_json_datas()
-            print(self.request_arguments)
-            requestLeagues = UrlRequest("http://127.0.0.1:5000/rencontres/competitions?" + self.request_arguments, self.parse_json)
-        elif self.current_page == 3:
-            self.clean_interface()
-            self.create_grid_for_json_datas()
-            requestMatches = UrlRequest('http://127.0.0.1:5000/rencontres?' + self.request_arguments, self.parse_json)
+    """
+class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
+                                 RecycleBoxLayout):
+    ''' Adds selection and focus behaviour to the view. '''
 
 
+class SelectableLabel(RecycleDataViewBehavior, Label):
+    ''' Add selection support to the Label '''
+    index = None
+    selected = BooleanProperty(False)
+    selectable = BooleanProperty(True)
 
-class KivyButton(App):
+    def refresh_view_attrs(self, rv, index, data):
+        ''' Catch and handle the view changes '''
+        self.index = index
+        return super(SelectableLabel, self).refresh_view_attrs(
+            rv, index, data)
 
- 
-    def disable(self, instance, *args):
- 
-        instance.disabled = True
- 
-    def update(self, instance, *args):
- 
-        instance.text = "I am Disabled!"
- 
-    def build(self):
+    def on_touch_down(self, touch):
+        ''' Add selection on touch down '''
+        if super(SelectableLabel, self).on_touch_down(touch):
+            return True
+        if self.collide_point(*touch.pos) and self.selectable:
+            return self.parent.select_with_touch(self.index, touch)
+
+    def apply_selection(self, rv, index, is_selected):
+        ''' Respond to the selection of items in the view. '''
+        self.selected = is_selected
+        if PageManager.PAGE == 2:
+            arg_to_add = "region=" + urllib.parse.quote(rv.data[index]["text"])
+            if is_selected:
+                PageManager.REQUEST_REGION += arg_to_add + "&"
+                print(PageManager.REQUEST_REGION)
+
+            else:
+                args = PageManager.REQUEST_REGION.split("&")
+                for arg in args:
+                    if arg_to_add == arg:
+                        args.remove(arg)
+                PageManager.REQUEST_REGION = "&".join(args)
+        elif PageManager.PAGE == 3:
+            arg_to_add = "competition=" + urllib.parse.quote(rv.data[index]["text"])
+            if is_selected:
+                PageManager.REQUEST_MATCHES += arg_to_add + "&"
+                print(PageManager.REQUEST_MATCHES)
+
+            else:
+                args = PageManager.REQUEST_MATCHES.split("&")
+                for arg in args:
+                    if arg_to_add == arg:
+                        args.remove(arg)
+                PageManager.REQUEST_MATCHES = "&".join(args)
+
+class SubmitButton(ButtonBehavior, Image):
+    def __init__(self, next_view, **kwargs):
+        super(SubmitButton, self).__init__(**kwargs)
+        self.next_view = next_view
+
+    def on_press(self):
+        self.next_view(None)
+
+class GoBackward(ButtonBehavior, Image):
+    def __init__(self, previous_view, **kwargs):
+        super(GoBackward, self).__init__(**kwargs)
+        self.previous_view = previous_view
+
+    def on_press(self):
+        self.previous_view()
+
+class Match(GridLayout):
+    pass
+
+class MatchPage(GridLayout):
+    def __init__(self,**kwargs):
+        super(MatchPage, self).__init__(**kwargs)
+        self.cols = 1
+        self.gridlayout = GridLayout(cols=1, size_hint_y=None,  spacing=10)
+        self.gridlayout.bind(minimum_height=self.gridlayout.setter('height'))
         
+    def add_to_view(self, req, result):
+        for value in result["matches"]:
+            match = Match()
+            match.ids.title.text = value["date"]
+            match.ids.bet_home.text = value["cote_dom"] + " " + value["domicile"]
+            match.ids.bet_draw.text = value["cote_dom"] + " Nul"
+            match.ids.bet_away.text = value["cote_ext"] + " " + value["exterieur"]
+            self.gridlayout.add_widget(match)
+
+    def create_grid_matches(self):
+        print(PageManager.REQUEST_MATCHES)
+        requestMatches = UrlRequest('http://127.0.0.1:5000/rencontres?' + PageManager.REQUEST_MATCHES, self.add_to_view)
+        return self.gridlayout
+
+class LeaguePage(RecycleView):
+    def __init__(self, **kwargs):
+        super(LeaguePage, self).__init__(**kwargs)
+        self.data = []
+        requestLeagues = UrlRequest("http://127.0.0.1:5000/rencontres/competitions?" + PageManager.REQUEST_REGION, self.parse_json)
+
+    def parse_json(self, req, result):
+        self.data = []
+        for value in result["competitions"]:
+            self.data.append({"text" : value})
+
+class RegionPage(RecycleView):
+    def __init__(self, arg, **kwargs):
+        super(RegionPage, self).__init__(**kwargs)
+        self.data = []
+        PageManager.REQUEST_REGION = ""
+        requestRegions = UrlRequest('http://127.0.0.1:5000/rencontres/{}/regions'.format(arg), self.parse_json)
+
+    def parse_json(self, req, result):
+        self.data = []
+        for value in result["regions"]:
+            self.data.append({"text": value, "on_press": functools.partial(self.add_arg_to_request, value)})
+            self.url_request_regions = req.url
+
+    def add_arg_to_request(self, req_arg):
+        #print(self.view_adapter.get_visible_view(5))
+        arg_to_search = "region="
+        """
+        elif self.PAGE == 3:
+            arg_to_search = "competition="
+        """
+
+        req_arg = urllib.parse.quote(req_arg) 
+        if req_arg in PageManager.REQUEST_REGION:
+            args = PageManager.REQUEST_REGION.split("&")
+            for arg in args:
+                if req_arg in arg:
+                    args.remove(arg)
+            PageManager.REQUEST_REGION = "&".join(args)
+        else:
+            if PageManager.REQUEST_REGION:
+                PageManager.REQUEST_REGION += "&" + arg_to_search + req_arg
+            else:
+                PageManager.REQUEST_REGION += arg_to_search + req_arg
+        print(PageManager.REQUEST_REGION)
+
+
+class SportPage(RecycleView):
+    def __init__(self, next_view, **kwargs):
+        super(SportPage, self).__init__(**kwargs)
+        self.data = []
+        self.next_view = next_view
+        self.request_json(None)
+
+    def request_json(self, arg):
+        requestCompetition = UrlRequest('http://127.0.0.1:5000/sports', self.parse_json)
+
+    def parse_json(self, req, result):
+        self.data = []
+        for value in result["sports"]:
+            self.data.append({"text" : value['nom'], "on_press" : functools.partial(self.next_view, value['nom'])})
+            self.url_request_sport = req.url
+
+class BookMarket(App):
+    def build(self):
+        return PageManager()
  
-        mybtn = Button(text="Click me to disable")
- 
-        mybtn.bind(on_press=partial(self.disable, mybtn))
- 
-        mybtn.bind(on_press=partial(self.update, mybtn))
- 
-        return Screen()
- 
-KivyButton().run()
+BookMarket().run()

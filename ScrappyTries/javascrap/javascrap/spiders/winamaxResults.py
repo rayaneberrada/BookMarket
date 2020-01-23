@@ -12,7 +12,7 @@ class WinamaxResults(scrapy.Spider):
 
     def start_requests(self):
         self.start_time = time.time()     
-        yield scrapy.http.Request('https://lsc.fn.sportradar.com/winamaxfr/fr/Europe:Helsinki/gismo/event_fullfeed')
+        yield scrapy.http.Request('https://lsc.fn.sportradar.com/winamaxfr/fr/Europe:Helsinki/gismo/event_fullfeed/-1')
 
     def parse(self, response):
         item = ResultItem()

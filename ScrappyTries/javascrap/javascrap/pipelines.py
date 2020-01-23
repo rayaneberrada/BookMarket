@@ -41,7 +41,7 @@ class JavascrapPipeline(object):
                 date_affrontement=%s", (item["home"], item["away"], item["date"]))
             match_id = cursor.fetchone()["id"]
             result = "Domicile" if item["result"] == "home" else "Exterieur" if item["result"] == "away" else "Nul"
-            cursor.execute("SELECT id FROM result WHERE statut=%s", result)
+            cursor.execute("SELECT id FROM resultat WHERE statut=%s", result)
             result_id = cursor.fetchone()["id"]
             datas = (result_id, match_id)
             sql = ("UPDATE rencontre SET result_id=%s WHERE id=%s")
