@@ -1,5 +1,6 @@
 from flask import Flask
-from flask import request, jsonify
+from flask import request, jsonify, abort
+from passlib.apps import custom_app_context as pwd_context
 import pymysql
 
 
@@ -99,19 +100,24 @@ def rencontre():
         #Voir si on garde les cotes au format string car jsonify n'accepte pas les decimal
     return jsonify(matches=datas)
 
-@app.route('/api/users', methods = ['POST'])
+@app.route('/users', methods = ['POST'])
 def new_user():
+    print("funciton called")
+    cursor = connection.cursor()
     username = request.json.get('username')
     password = request.json.get('password')
+
+    cursor.execute("SELECT nom FROM utilisateur WHERE nom=%s", username)
+    user_exist = cursor.fetchone()
+    print(username, password, type(user_exist))
     if username is None or password is None:
-        abort(400) # missing arguments
-    if User.query.filter_by(username = username).first() is not None:
-        abort(400) # existing user
-    user = User(username = username)
-    user.hash_password(password)
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({ 'username': user.username }), 201, {'Location': url_for('get_user', id = user.id, _external = True)}
+        return jsonify({ "error_message": "Nom ou mot de passe manquant" }), 400
+    if user_exist is not None:
+        return jsonify({ "error_message": "Utilisateur déjà existant" }), 400
+    password_hash = pwd_context.encrypt(password)
+    cursor.execute("INSERT INTO utilisateur (nom, mot_de_passe, argent) VALUES (%s, %s, 1000)", (username, password_hash))
+    connection.commit()
+    return jsonify({ "succes_message": "L'utilisateur a bien été ajouté" }), 201
 
 if __name__ == "__main__":
     app.run()
