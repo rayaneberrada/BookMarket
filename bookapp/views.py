@@ -42,7 +42,9 @@ def regions(sport_name):
     """
     parameters = request.args
     cursor = connection.cursor()
-    sport_id = cursor.execute("SELECT id FROM sport WHERE nom=%s", sport_name)
+    cursor.execute("SELECT id FROM sport WHERE nom=%s", sport_name)
+    sport_id = cursor.fetchone()["id"]
+    print(sport_name,sport_id)
     cursor.execute("SELECT DISTINCT region FROM rencontre WHERE sport_id=%s", sport_id)
     rows = cursor.fetchall()
     datas = []
@@ -123,13 +125,13 @@ def login():
 
     cursor.execute("SELECT nom, mot_de_passe FROM utilisateur WHERE nom=%s", username)
     user_exist = cursor.fetchone()
-    print(user_exist)
     if user_exist is not None:
-        password_hash = pwd_context.encrypt(password)
-        if user_exist["mot_de_passe"] == password_hash:
-            return jsonify({ "succes_message": "Connexion réussie", "name": user_exist["nom"]}), 201
-        else
+        if pwd_context.verify(password, user_exist["mot_de_passe"]):
+            return jsonify({ "succes_message": "Connexion réussie", "username": user_exist["nom"]}), 201
+        else:
             return jsonify({ "error_message": "Mauvais mot de passe" }), 400
+    else:
+        return jsonify({ "error_message": "Cet utilisateur n'existe pas" }), 400
 
 if __name__ == "__main__":
     app.run()

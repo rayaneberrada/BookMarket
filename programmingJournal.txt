@@ -8,20 +8,29 @@ Pour ce qui est des autres thèmes, ils sont librement définis, bien qu'il s'es
 MISE A JOUR IMPORTANTE:
 Seul le site winamax n'interdisant pas le scrapping de ses données dans à la fois robts.txt et ses cgu, l'application va devenir une plateforme permettant de parier virtuellement
 
+MISE A JOUR IMPORTANTE:
+Seul le site winamax n'interdisant pas le scrapping de ses données dans à la fois robts.txt et ses cgu, l'application va devenir une plateforme permettant de parier virtuellement
+
 Problème:
 Requête SQL: http://127.0.0.1:5000/rencontres?competition=Domino%27s%20Ligue%202&		
 
 DONE:
-FINIR implémentation language avec kv
+permettre à l'utilisateur de s'enregistrer
+permettre à l'utilisateur de se connecter
+
 
 TO DO:
+Préciser dans la recherche de compétition, en plus de la région, le sport id, sinon risque de colision avec les autres sports
+Voir si possibilité de désélectionner automatiquement les paramètres de requêtes lorsque l'on fait un retour en arrière 
 Récupérer id du match lors de l'affichage pour requêter plus facilement lorsqu'on place un pari
-Mettre à jour mpd avec utilistaure, favoris, argent, paris
-permettre à l'utilisateur de s'enregistrer
 permettre à l'utilisateur d'enregistrer un pari sur son portable
 permettre d'ajouter uen recherche en favoris
+Ajouter une possibilité de se déconnecter quand sur pages des bets
+cacher l'écriture du mot de passe et faire un deuxième champ pour le valider et néttoyer les textinput après valdiation
+ajouter des conditions et messages d'erreurs par rapport à la longueur du pseudo et du mot de passe
 Vérifier le scraping et la conformité entre résultat et match scrapé
 afficher les plus gros gagnants avec leur nom
+Améliorer en faisant en sorte que l'utilisateur s'enregistre avec une adresse mail et qu'il doive valider son compte via cette adresse
 Faire une requête au lancement de l'appli pour vérifier si résultat / permettre à l'utilisateur de faire cette requête / et peut être aussi automatiser cette requête
 améliorer api et créer documentation
 Avoir un outils pour comparer le nombre de match que renvoie chaque spider et voir pour chaque sport le nombre de match avec des dates d'affrontement similaires
@@ -148,5 +157,3 @@ Logique kivy:
 Requêter les informations nécessaires
 Créer un widget pour le titre et un pour le bas (couleur: #6d9eebff)
 créer pour chaque info un grid dans gridlayout en plus de deux grids de bases que seront favoris et alerts (couleur widgets: #c9daf8ff, couleur barre d'encadrement #d3d3d3ff)
-
-

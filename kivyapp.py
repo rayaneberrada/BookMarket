@@ -95,99 +95,7 @@ class PageManager(Screen):
             self.ids.pages.add_widget(self.league_page)
             self.ids.bottom.add_widget(self.submit)
             PageManager.PAGE -= 1
-            # popup error window
-        #----------------------------------------------
-        #attributes used to navigate in the application
 
-        #----------------------------------------------
-        """
-        self.cols = 1 # Set columns for main layout
-        self.tittle = Button(text="BookMarket", font_size=40, size_hint_y=None, height=Window.height/5)
-        self.add_widget(self.tittle)
-        self.request_json(None)
-
-        #-------------------------------------------------
-    def backward(self, button):
-        if self.current_page == 2:
-            self.clean_interface()
-            self.create_grid_for_json_datas()
-            self.current_page -= 2
-            requestCompetition = UrlRequest(self.url_request_sport, self.parse_json)
-            
-        elif self.current_page == 3:
-            self.clean_interface()
-            self.create_grid_for_json_datas()
-            self.current_page -= 2
-            requestCompetition = UrlRequest(self.url_request_regions, self.parse_json)
-            
-        elif self.current_page == 4:
-            self.clean_interface()
-            self.create_grid_for_json_datas()
-            self.current_page -= 2
-            requestCompetition = UrlRequest(self.url_request_leagues, self.parse_json)
-            
-
-
-
-    def create_submit_buttons(self):
-        self.add_widget(self.inside)
-        if self.current_page == 0:
-            self.bottom_grid = Button(text="Submit", font_size=40,size_hint_y=None, height=Window.height/5)
-            self.add_widget(self.bottom_grid) # Add the button to the main layout 4
-        elif self.current_page >= 1:
-            self.bottom_grid = GridLayout(cols=3, size_hint_y=None, height=Window.height/5)
-            self.back_button = Button(text="Backward", font_size=40)
-            self.back_button.bind(on_press=self.backward)
-            self.submit = Button(text="Submit", font_size=40)
-            self.submit.bind(on_press=self.request_json)
-            self.favorite = Button(text="Favorites")
-            self.bottom_grid.add_widget(self.back_button)
-            self.bottom_grid.add_widget(self.submit)
-            self.bottom_grid.add_widget(self.favorite)
-            self.add_widget(self.bottom_grid) # Add the button to the main layout 4
-         # Add the interior layout to the main
-        #--------------------------------------------------
-    
-    def clean_interface(self):
-        self.remove_widget(self.inside)
-        self.remove_widget(self.bottom_grid)
-
-    def create_grid_for_json_datas(self):
-        self.inside = GridLayout(size_hint_y=None, height=(Window.height)*(3/5)) # Create a new grid layout
-        self.inside.cols = 3 # set columns for the new grid layout
-        self.inside.add_widget(Widget())
-        # height=int(Window.height)/8.9
-
-        self.informations = ScrollView(size_hint=(1, None), height=(Window.height)*(3/5))
-        self.scrollinfos = (GridLayout(cols=1, spacing=0, size_hint_y=None))
-        self.scrollinfos.bind(minimum_height=self.scrollinfos.setter('height'))
-        self.informations.add_widget(self.scrollinfos)
-    
-
-
-    def create_match_display(self, infos):
-        match = GridLayout(cols=1, size_hint_y=None, height=Window.height*(3/5))
-        first_row = " ".join([ x for x in [infos["date"], " ", infos["tv"]] if x is not None])
-        match.add_widget(Label(text=first_row))
-        second_row = GridLayout(cols=3)
-        second_row.add_widget(Label(text=str(infos["cote_dom"])))
-        second_row.add_widget(Label(text=str(infos["domicile"])))
-        second_row.add_widget(Label(text="RING"))
-        match.add_widget(second_row)
-        third_row = GridLayout(cols=3)
-        third_row.add_widget(Label(text=str(infos["cote_nul"])))
-        third_row.add_widget(Label(text="Nul"))
-        third_row.add_widget(Label(text="RING"))
-        match.add_widget(third_row)
-        forth_row = GridLayout(cols=3)
-        forth_row.add_widget(Label(text=str(infos["cote_ext"])))
-        forth_row.add_widget(Label(text=str(infos["exterieur"])))
-        forth_row.add_widget(Label(text="RING"))
-        match.add_widget(forth_row)
-        self.scrollinfos.add_widget(match)
-
-            
-    """
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
                                  RecycleBoxLayout):
     ''' Adds selection and focus behaviour to the view. '''
@@ -344,20 +252,27 @@ class SportPage(RecycleView):
             self.url_request_sport = req.url
 
 class LoginWindow(Screen):
-    email = ObjectProperty(None)
-    password = ObjectProperty(None)
-
-    def loginBtn(self):
-        if db.validate(self.email.text, self.password.text):
-            MainWindow.current = self.email.text
-            self.reset()
-            sm.current = "main"
+    def login(self):
+        username = self.ids.name.text.strip()
+        password= self.ids.password.text.strip()
+        if not username or not password:
+            self.invalid_form()     
         else:
-            invalidLogin()
+            params = json.dumps({"username": username, "password": password})
+            headers = {"Content-Type": "application/json"}
+            req = UrlRequest('http://127.0.0.1:5000/login', on_success=self.connected,
+                on_failure=self.wrong_request, req_body=params, req_headers=headers)
 
-    def createBtn(self):
-        self.reset()
-        sm.current = "create"
+    def connected(self, req, result):
+        BookMarket.DISPLAY.current = "bets"
+        PageManager.USER = result["username"]
+
+    def wrong_request(self, req, result):
+        pop = Popup(title='Invalid Form',
+                      content=Label(text=result["error_message"]),
+                      size_hint=(None, None), size=(250, 250))
+
+        pop.open()
 
     def register(self):
         BookMarket.DISPLAY.current = "register"
@@ -376,7 +291,6 @@ class RegisterWindow(Screen):
         if not username or not password:
             self.invalid_form()
         else:
-            print("yes")
             params = json.dumps({"username": username, "password": password})
             print(params)
             headers = {"Content-Type": "application/json"}
