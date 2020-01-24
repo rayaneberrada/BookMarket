@@ -108,14 +108,28 @@ def new_user():
 
     cursor.execute("SELECT nom FROM utilisateur WHERE nom=%s", username)
     user_exist = cursor.fetchone()
-    if username is None or password is None:
-        return jsonify({ "error_message": "Nom ou mot de passe manquant" }), 400
     if user_exist is not None:
         return jsonify({ "error_message": "Utilisateur déjà existant" }), 400
     password_hash = pwd_context.encrypt(password)
     cursor.execute("INSERT INTO utilisateur (nom, mot_de_passe, argent) VALUES (%s, %s, 1000)", (username, password_hash))
     connection.commit()
     return jsonify({ "succes_message": "L'utilisateur a bien été ajouté" }), 201
+
+@app.route('/login', methods = ['POST'])
+def login():
+    cursor = connection.cursor()
+    username = request.json.get('username')
+    password = request.json.get('password')
+
+    cursor.execute("SELECT nom, mot_de_passe FROM utilisateur WHERE nom=%s", username)
+    user_exist = cursor.fetchone()
+    print(user_exist)
+    if user_exist is not None:
+        password_hash = pwd_context.encrypt(password)
+        if user_exist["mot_de_passe"] == password_hash:
+            return jsonify({ "succes_message": "Connexion réussie", "name": user_exist["nom"]}), 201
+        else
+            return jsonify({ "error_message": "Mauvais mot de passe" }), 400
 
 if __name__ == "__main__":
     app.run()
