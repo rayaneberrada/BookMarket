@@ -102,14 +102,12 @@ def rencontre():
 
 @app.route('/users', methods = ['POST'])
 def new_user():
-    print("funciton called")
     cursor = connection.cursor()
     username = request.json.get('username')
     password = request.json.get('password')
 
     cursor.execute("SELECT nom FROM utilisateur WHERE nom=%s", username)
     user_exist = cursor.fetchone()
-    print(username, password, type(user_exist))
     if username is None or password is None:
         return jsonify({ "error_message": "Nom ou mot de passe manquant" }), 400
     if user_exist is not None:

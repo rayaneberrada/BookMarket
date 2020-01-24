@@ -1,6 +1,7 @@
 from kivy.uix.button import Button
 from kivy.uix.behaviors import ButtonBehavior 
 from kivy.uix.image import Image  
+from kivy.properties import ObjectProperty
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -23,12 +24,14 @@ from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 from kivy.uix.recyclegridlayout import RecycleGridLayout
-
+from kivy.uix.screenmanager import ScreenManager, Screen
+import json
 
 class PageManager(Screen):
     PAGE = 0
     REQUEST_REGION = ""
     REQUEST_MATCHES = ""
+    USER = ""
     def __init__(self, **kwargs):
         super(PageManager, self).__init__(**kwargs)
         self.sport_page = None
@@ -61,7 +64,7 @@ class PageManager(Screen):
         elif PageManager.PAGE == 2 and self.REQUEST_REGION == "":
             pop = Popup(title='Invalid Request',
                   content=Label(text='Choisissez au moins une région'),
-                  size_hint=(None, None), size=(400, 400))
+                  size_hint=(None, None), size=(250, 250))
             pop.open()
         elif PageManager.PAGE == 3 and self.REQUEST_MATCHES != "":
             self.ids.pages.remove_widget(self.league_page)
@@ -73,7 +76,7 @@ class PageManager(Screen):
         elif PageManager.PAGE == 3 and self.REQUEST_MATCHES == "":
             pop = Popup(title='Invalid Request',
                   content=Label(text='Choisissez au moins un championnat'),
-                  size_hint=(None, None), size=(400, 400))
+                  size_hint=(None, None), size=(250, 250))
             pop.open()
 
     def previous_view(self):
@@ -340,8 +343,81 @@ class SportPage(RecycleView):
             self.data.append({"text" : value['nom'], "on_press" : functools.partial(self.next_view, value['nom'])})
             self.url_request_sport = req.url
 
+class LoginWindow(Screen):
+    email = ObjectProperty(None)
+    password = ObjectProperty(None)
+
+    def loginBtn(self):
+        if db.validate(self.email.text, self.password.text):
+            MainWindow.current = self.email.text
+            self.reset()
+            sm.current = "main"
+        else:
+            invalidLogin()
+
+    def createBtn(self):
+        self.reset()
+        sm.current = "create"
+
+    def register(self):
+        BookMarket.DISPLAY.current = "register"
+
+    def invalid_form():
+        pop = Popup(title='Invalid Form',
+                      content=Label(text='Veuillez remplir tous les champs'),
+                      size_hint=(None, None), size=(250, 250))
+
+        pop.open()
+
+class RegisterWindow(Screen):
+    def create_account(self):
+        username = self.ids.name.text.strip()
+        password= self.ids.password.text.strip()
+        if not username or not password:
+            self.invalid_form()
+        else:
+            print("yes")
+            params = json.dumps({"username": username, "password": password})
+            print(params)
+            headers = {"Content-Type": "application/json"}
+            req = UrlRequest('http://127.0.0.1:5000/users', on_success=self.display_message,
+                on_failure=self.display_message, req_body=params, req_headers=headers)
+
+    def display_message(self, req, result):
+        if "succes_message" in result:
+            self.request_answer(result["succes_message"])
+        elif "error_message" in result:
+            self.request_answer(result["error_message"])
+
+    def login(self):
+        BookMarket.DISPLAY.current = "login"
+
+    def invalid_form(self):
+        pop = Popup(title='Invalid Form',
+                      content=Label(text='Veuillez remplir tous les champs'),
+                      size_hint=(None, None), size=(250, 250))
+
+        pop.open()
+
+    def request_answer(self, message):
+        pop = Popup(title='Invalid Form',
+                      content=Label(text=message),
+                      size_hint=(None, None), size=(250, 250))
+
+        pop.open()
+
+class WindowManager(ScreenManager):
+    pass
+
+
+
 class BookMarket(App):
+    DISPLAY = WindowManager()
     def build(self):
-        return PageManager()
+        screens = [LoginWindow(name="login"), RegisterWindow(name="register"), PageManager(name="bets")]
+        for screen in screens:
+            BookMarket.DISPLAY.add_widget(screen)
+        BookMarket.DISPLAY.current = "login" 
+        return BookMarket.DISPLAY
  
 BookMarket().run()
