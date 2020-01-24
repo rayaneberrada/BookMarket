@@ -16,6 +16,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 import urllib.parse
 import functools
+from kivy.uix.popup import Popup
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.properties import BooleanProperty
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
@@ -58,8 +59,10 @@ class PageManager(Screen):
             self.ids.pages.add_widget(self.league_page)
             PageManager.PAGE += 1
         elif PageManager.PAGE == 2 and self.REQUEST_REGION == "":
-            pass
-            # popup error window
+            pop = Popup(title='Invalid Request',
+                  content=Label(text='Choisissez au moins une région'),
+                  size_hint=(None, None), size=(400, 400))
+            pop.open()
         elif PageManager.PAGE == 3 and self.REQUEST_MATCHES != "":
             self.ids.pages.remove_widget(self.league_page)
             self.ids.bottom.remove_widget(self.submit)
@@ -68,7 +71,10 @@ class PageManager(Screen):
             self.ids.pages.add_widget(self.match_page)
             PageManager.PAGE += 1
         elif PageManager.PAGE == 3 and self.REQUEST_MATCHES == "":
-            pass
+            pop = Popup(title='Invalid Request',
+                  content=Label(text='Choisissez au moins un championnat'),
+                  size_hint=(None, None), size=(400, 400))
+            pop.open()
 
     def previous_view(self):
         if PageManager.PAGE == 2:

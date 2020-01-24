@@ -2,7 +2,25 @@ from flask import Flask
 from flask import request, jsonify
 import pymysql
 
+
 app = Flask(__name__)
+
+class User():
+    # ...
+
+    def hash_password(self, password):
+        self.password_hash = pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        return pwd_context.verify(password, self.password_hash)
+
+
+connection = pymysql.connect(host='localhost',
+                     user='rayane',
+                     password='i77EWEsN',
+                     db='BookMarket',
+                     charset='utf8mb4',
+                     cursorclass=pymysql.cursors.DictCursor)
 
 @app.route('/sports', methods=['GET'])
 def sports():
@@ -10,13 +28,6 @@ def sports():
     When appurl/sports is requested, all the sports of the Database or sent in a jsonformat containing
     the name of the sport and the associated id
     """
-    connection = pymysql.connect(host='localhost',
-                     user='rayane',
-                     password='i77EWEsN',
-                     db='BookMarket',
-                     charset='utf8mb4',
-                     cursorclass=pymysql.cursors.DictCursor)
-
     cursor = connection.cursor()
     cursor.execute("SELECT nom, id FROM sport")
     rows = cursor.fetchall()
@@ -28,13 +39,6 @@ def regions(sport_name):
     When appurl/rencontres/<int:sport_id>/regions is requested, depending of the number used in sport_id
     parameter, the regions names related to the sport which match this id will be sent in a json format
     """
-    connection = pymysql.connect(host='localhost',
-                     user='rayane',
-                     password='i77EWEsN',
-                     db='BookMarket',
-                     charset='utf8mb4',
-                     cursorclass=pymysql.cursors.DictCursor)
-
     parameters = request.args
     cursor = connection.cursor()
     sport_id = cursor.execute("SELECT id FROM sport WHERE nom=%s", sport_name)
@@ -46,14 +50,7 @@ def regions(sport_name):
     return jsonify(regions=datas)
 
 @app.route('/rencontres/competitions', methods=['GET'])
-def competition():
-    connection = pymysql.connect(host='localhost',
-                     user='rayane',
-                     password='i77EWEsN',
-                     db='BookMarket',
-                     charset='utf8mb4',
-                     cursorclass=pymysql.cursors.DictCursor)
-
+def match():
     cursor = connection.cursor()
     parameters = request.args.getlist("region")
 
@@ -77,13 +74,6 @@ def competition():
 
 @app.route('/rencontres', methods=['GET'])
 def rencontre():
-    connection = pymysql.connect(host='localhost',
-                     user='rayane',
-                     password='i77EWEsN',
-                     db='BookMarket',
-                     charset='utf8mb4',
-                     cursorclass=pymysql.cursors.DictCursor)
-
     cursor = connection.cursor()
     parameters = request.args.getlist("competition")
 
@@ -108,6 +98,20 @@ def rencontre():
                     "tv" : row["diffuseur"]})
         #Voir si on garde les cotes au format string car jsonify n'accepte pas les decimal
     return jsonify(matches=datas)
+
+@app.route('/api/users', methods = ['POST'])
+def new_user():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    if username is None or password is None:
+        abort(400) # missing arguments
+    if User.query.filter_by(username = username).first() is not None:
+        abort(400) # existing user
+    user = User(username = username)
+    user.hash_password(password)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({ 'username': user.username }), 201, {'Location': url_for('get_user', id = user.id, _external = True)}
 
 if __name__ == "__main__":
     app.run()
