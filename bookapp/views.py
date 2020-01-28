@@ -2,7 +2,7 @@ from flask import Flask
 from flask import request, jsonify, abort
 from passlib.apps import custom_app_context as pwd_context
 import pymysql
-
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -52,10 +52,12 @@ def regions(sport_name):
         datas.append(row["region"])
     return jsonify(regions=datas)
 
-@app.route('/rencontres/competitions', methods=['GET'])
-def match():
+@app.route('/rencontres/<sport_name>/competitions', methods=['GET'])
+def competitions(sport_name):
     cursor = connection.cursor()
     parameters = request.args.getlist("region")
+    cursor.execute("SELECT id FROM sport WHERE nom=%s", sport_name)
+    sport_id = cursor.fetchone()["id"]
 
     if parameters:
         sql = "SELECT DISTINCT competition FROM rencontre WHERE region IN ("
@@ -64,7 +66,9 @@ def match():
                 sql += "'" + parameter + "',"
             else:
                 sql += "'" + parameter + "')"
-        cursor.execute(sql)
+        sport_sql = "AND sport_id = %s"
+        sql = sql + sport_sql
+        cursor.execute(sql, sport_id)
     else:
         cursor.execute("SELECT DISTINCT competition FROM rencontre")
 
@@ -81,7 +85,7 @@ def rencontre():
     parameters = request.args.getlist("competition")
 
     if parameters:
-        sql = "SELECT cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
+        sql = "SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
                      cote_exterieure,date_affrontement,diffuseur FROM rencontre WHERE competition IN ("
         for parameter in parameters:
             if parameter != parameters[-1]:
@@ -90,7 +94,7 @@ def rencontre():
                 sql += "'" + parameter + "')"
         cursor.execute(sql)
     else:
-        cursor.execute("SELECT cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
+        cursor.execute("SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
                      cote_exterieure,date_affrontement,diffuseur FROM rencontre")
 
     rows = cursor.fetchall()
@@ -98,7 +102,7 @@ def rencontre():
     for row in rows:
         datas.append({"cote_nul" : str(row["cote_match_nul"]),"domicile" : row["equipe_domicile"], "cote_dom" :str(row["cote_domicile"]),\
                     "exterieur" : row["equipe_exterieure"], "cote_ext" : str(row["cote_exterieure"]), "date" : row["date_affrontement"],\
-                    "tv" : row["diffuseur"]})
+                    "tv" : row["diffuseur"], "id": str(row["id"])})
         #Voir si on garde les cotes au format string car jsonify n'accepte pas les decimal
     return jsonify(matches=datas)
 
@@ -123,15 +127,31 @@ def login():
     username = request.json.get('username')
     password = request.json.get('password')
 
-    cursor.execute("SELECT nom, mot_de_passe FROM utilisateur WHERE nom=%s", username)
+    cursor.execute("SELECT id, mot_de_passe, argent  FROM utilisateur WHERE nom=%s", username)
     user_exist = cursor.fetchone()
     if user_exist is not None:
         if pwd_context.verify(password, user_exist["mot_de_passe"]):
-            return jsonify({ "succes_message": "Connexion réussie", "username": user_exist["nom"]}), 201
+            return jsonify({ "succes_message": "Connexion réussie", "user_id": user_exist["id"], "money": user_exist["argent"]}), 201
         else:
             return jsonify({ "error_message": "Mauvais mot de passe" }), 400
     else:
         return jsonify({ "error_message": "Cet utilisateur n'existe pas" }), 400
+
+@app.route('/bets', methods = ['POST'])
+def bet():
+    cursor = connection.cursor()
+    match_id = request.json.get("match_id")
+    user_id = request.json.get("user_id")
+    bet = request.json.get("bet")
+    cursor.execute("SELECT date_affrontement  FROM rencontre WHERE id=%s", match_id)
+    date_match = cursor.fetchone()
+    if datetime.now() >=  date_match["date_affrontement"]:
+        return jsonify({ "error_message": "Match commencé.Paris indisponible." }), 400
+    else:
+        cursor.execute("INSERT INTO paris (rencontre_id, utilisateur_id, mise, resultat_id) VALUES (%s, %s, %s, %s)", (match_id, user_id, bet, 4))
+        cursor.execute("UPDATE utilisateur SET argent = argent - %s WHERE id=%s",(bet, user_id))
+        return jsonify({ "succes_message": "Paris enregistré", "bet": bet }), 201
+    #Vérifier qu'une cote existe
 
 if __name__ == "__main__":
     app.run()

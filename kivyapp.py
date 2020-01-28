@@ -31,7 +31,9 @@ class PageManager(Screen):
     PAGE = 0
     REQUEST_REGION = ""
     REQUEST_MATCHES = ""
-    USER = ""
+    USER = None
+    MONEY = None
+    SPORT_CHOSEN = ""
     def __init__(self, **kwargs):
         super(PageManager, self).__init__(**kwargs)
         self.sport_page = None
@@ -44,6 +46,7 @@ class PageManager(Screen):
 
     def create_view(self, choice):
         if PageManager.PAGE == 0:
+            self.update_money()
             self.sport_page = SportPage(self.create_view)
             self.ids.pages.add_widget(self.sport_page)
             PageManager.PAGE += 1
@@ -95,6 +98,15 @@ class PageManager(Screen):
             self.ids.pages.add_widget(self.league_page)
             self.ids.bottom.add_widget(self.submit)
             PageManager.PAGE -= 1
+
+    def update_money(self):
+        self.ids.amount.text = "Solde: " + str(PageManager.MONEY)
+
+    def logout(self):
+        BookMarket.DISPLAY.current = "login"
+        while self.PAGE != 1:
+            self.previous_view()
+
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
                                  RecycleBoxLayout):
@@ -164,8 +176,47 @@ class GoBackward(ButtonBehavior, Image):
     def on_press(self):
         self.previous_view()
 
-class Match(GridLayout):
+class Disconnect(ButtonBehavior, Image):
     pass
+
+class Match(GridLayout):
+    def bet(self, button_text):
+        if button_text == "Domicile":
+            input_amount = self.ids.input_home.text
+        elif button_text =="Extérieur":
+            input_amount = self.ids.input_away.text
+        elif button_text == "Nul":
+            input_amount = self.ids.input_draw.text
+        
+        if input_amount:
+            if input_amount.isdigit():
+                input_amount = int(input_amount)
+                if PageManager.MONEY >= input_amount:
+                    headers = {"Content-Type": "application/json"}
+                    params = json.dumps({"bet": input_amount, "user_id": PageManager.USER, "match_id": self.id})
+                    req = UrlRequest('http://127.0.0.1:5000/bets', on_success=self.update_player,
+                req_body=params, req_headers=headers)
+                else:   
+                    pass
+            else:
+                pass
+        else:
+            pass
+
+    def update_player(self, req, result):
+        if "succes_message" in result:
+            PageManager.MONEY -= result["bet"]
+            LoginWindow.PM.update_money()
+            self.request_answer(result["succes_message"])
+        elif "error_message" in result:
+            self.request_answer(result["error_message"])
+
+    def request_answer(self, message):
+        pop = Popup(title='Invalid Form',
+                      content=Label(text=message),
+                      size_hint=(None, None), size=(250, 250))
+
+        pop.open()
 
 class MatchPage(GridLayout):
     def __init__(self,**kwargs):
@@ -177,6 +228,7 @@ class MatchPage(GridLayout):
     def add_to_view(self, req, result):
         for value in result["matches"]:
             match = Match()
+            match.id = value["id"]
             match.ids.title.text = value["date"]
             match.ids.bet_home.text = value["cote_dom"] + " " + value["domicile"]
             match.ids.bet_draw.text = value["cote_dom"] + " Nul"
@@ -192,7 +244,7 @@ class LeaguePage(RecycleView):
     def __init__(self, **kwargs):
         super(LeaguePage, self).__init__(**kwargs)
         self.data = []
-        requestLeagues = UrlRequest("http://127.0.0.1:5000/rencontres/competitions?" + PageManager.REQUEST_REGION, self.parse_json)
+        requestLeagues = UrlRequest("http://127.0.0.1:5000/rencontres/{}/competitions?".format(PageManager.SPORT_CHOSEN) + PageManager.REQUEST_REGION, self.parse_json)
 
     def parse_json(self, req, result):
         self.data = []
@@ -200,11 +252,12 @@ class LeaguePage(RecycleView):
             self.data.append({"text" : value})
 
 class RegionPage(RecycleView):
-    def __init__(self, arg, **kwargs):
+    def __init__(self, sport, **kwargs):
         super(RegionPage, self).__init__(**kwargs)
         self.data = []
         PageManager.REQUEST_REGION = ""
-        requestRegions = UrlRequest('http://127.0.0.1:5000/rencontres/{}/regions'.format(arg), self.parse_json)
+        PageManager.SPORT_CHOSEN = sport
+        requestRegions = UrlRequest('http://127.0.0.1:5000/rencontres/{}/regions'.format(sport), self.parse_json)
 
     def parse_json(self, req, result):
         self.data = []
@@ -252,6 +305,8 @@ class SportPage(RecycleView):
             self.url_request_sport = req.url
 
 class LoginWindow(Screen):
+    PM = None
+
     def login(self):
         username = self.ids.name.text.strip()
         password= self.ids.password.text.strip()
@@ -264,8 +319,15 @@ class LoginWindow(Screen):
                 on_failure=self.wrong_request, req_body=params, req_headers=headers)
 
     def connected(self, req, result):
+        PageManager.PAGE = 0
+        PageManager.USER = result["user_id"]
+        PageManager.MONEY = result["money"]
+        LoginWindow.PM = PageManager(name="bets")
+        BookMarket.DISPLAY.add_widget(LoginWindow.PM)
+        self.ids.name.text = ""
+        self.ids.password.text = ""
         BookMarket.DISPLAY.current = "bets"
-        PageManager.USER = result["username"]
+
 
     def wrong_request(self, req, result):
         pop = Popup(title='Invalid Form',
@@ -275,6 +337,8 @@ class LoginWindow(Screen):
         pop.open()
 
     def register(self):
+        self.ids.name.text = ""
+        self.ids.password.text = ""
         BookMarket.DISPLAY.current = "register"
 
     def invalid_form():
@@ -292,7 +356,6 @@ class RegisterWindow(Screen):
             self.invalid_form()
         else:
             params = json.dumps({"username": username, "password": password})
-            print(params)
             headers = {"Content-Type": "application/json"}
             req = UrlRequest('http://127.0.0.1:5000/users', on_success=self.display_message,
                 on_failure=self.display_message, req_body=params, req_headers=headers)
@@ -304,6 +367,8 @@ class RegisterWindow(Screen):
             self.request_answer(result["error_message"])
 
     def login(self):
+        self.ids.name.text = ""
+        self.ids.password.text = ""
         BookMarket.DISPLAY.current = "login"
 
     def invalid_form(self):
@@ -328,7 +393,7 @@ class WindowManager(ScreenManager):
 class BookMarket(App):
     DISPLAY = WindowManager()
     def build(self):
-        screens = [LoginWindow(name="login"), RegisterWindow(name="register"), PageManager(name="bets")]
+        screens = [LoginWindow(name="login"), RegisterWindow(name="register")]
         for screen in screens:
             BookMarket.DISPLAY.add_widget(screen)
         BookMarket.DISPLAY.current = "login" 
