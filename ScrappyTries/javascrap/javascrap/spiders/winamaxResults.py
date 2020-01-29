@@ -24,15 +24,7 @@ class WinamaxResults(scrapy.Spider):
                     for tournament in country["tournaments"]:
                         for match in tournament["matches"]:
                             item["result"] = match["result"]["winner"]
-                            item["home"] = match["teams"]["home"]["name"]
-                            item["away"] = match["teams"]["away"]["name"]
-                            minutes = int(match["_dt"]["time"][3:5])
-                            hour = int(match["_dt"]["time"][0:2])
-                            year = int("20" + match["_dt"]["date"][6:8])
-                            month = int(match["_dt"]["date"][3:5])
-                            day = int(match["_dt"]["date"][0:2])
-                            date = datetime(year, month, day, hour, minutes) - timedelta(hours=1)
-                            item["date"] = date.strftime('%Y-%m-%d %H:%M')
+                            item["reference"] = str(match["id"])
                             yield item
             else:
                 continue

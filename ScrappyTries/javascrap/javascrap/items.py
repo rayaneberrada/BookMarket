@@ -20,12 +20,11 @@ class MatchItem(scrapy.Item):
     odd_home = scrapy.Field()
     odd_away = scrapy.Field()
     odd_draw = scrapy.Field()
+    reference = scrapy.Field()
 
     #Housekeping fields
     url = scrapy.Field()
 
 class ResultItem(scrapy.Item):
-    home = scrapy.Field()
-    away = scrapy.Field()
-    date = scrapy.Field()
+    reference = scrapy.Field()
     result = scrapy.Field()

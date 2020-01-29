@@ -8,44 +8,39 @@ Pour ce qui est des autres thèmes, ils sont librement définis, bien qu'il s'es
 MISE A JOUR IMPORTANTE:
 Seul le site winamax n'interdisant pas le scrapping de ses données dans à la fois robts.txt et ses cgu, l'application va devenir une plateforme permettant de parier virtuellement
 
-MISE A JOUR IMPORTANTE:
-Seul le site winamax n'interdisant pas le scrapping de ses données dans à la fois robts.txt et ses cgu, l'application va devenir une plateforme permettant de parier virtuellement
-
-Problème:
-Requête SQL: http://127.0.0.1:5000/rencontres?competition=Domino%27s%20Ligue%202&		
+Problème scraping:
+Requête SQL: http://127.0.0.1:5000/rencontres?competition=Domino%27s%20Ligue%202&	
+"GET /rencontres?competition=Ligat%20ha%27Al& HTTP/1.1" 500 -
+"GET /rencontres/Football/competitions?region=LDC%20d%27Afrique& HTTP/1.1" 500 -
+Irelande pas de résultat enregistré sur winamax pour un pari proposé
+	
 
 DONE:
-permettre à l'utilisateur de s'enregistrer
-permettre à l'utilisateur de se connecter
-
+permettre à l'utilisateur de se déconnecter
+Préciser dans la recherche de compétition, en plus de la région, le sport id, sinon risque de colision avec les autres sports
+Récupérer l'id des matchs dans le scrapings 
 
 TO DO:
-Préciser dans la recherche de compétition, en plus de la région, le sport id, sinon risque de colision avec les autres sports
-Voir si possibilité de désélectionner automatiquement les paramètres de requêtes lorsque l'on fait un retour en arrière 
-Récupérer id du match lors de l'affichage pour requêter plus facilement lorsqu'on place un pari
-permettre à l'utilisateur d'enregistrer un pari sur son portable
+update resultat_id to NULL dans la table paris
+créer un script qui met à jour la base de données avec les paris et l'argent et voir pour un script qui met à jour automatiquement par rapport au paris enregistré
+Demander une seconde validation au moment du paris
+Organiser l'affichage des paris par date
 permettre d'ajouter uen recherche en favoris
-Ajouter une possibilité de se déconnecter quand sur pages des bets
+Gérer l'affichage du tennis
+afficher les paris effectués
+rendre le champ solde proportionné dans sa position par rapport au reste
 cacher l'écriture du mot de passe et faire un deuxième champ pour le valider et néttoyer les textinput après valdiation
 ajouter des conditions et messages d'erreurs par rapport à la longueur du pseudo et du mot de passe
-Vérifier le scraping et la conformité entre résultat et match scrapé
+ajouter les images au git et organiser mieux les fichier (notamment image et base de données)
+
 afficher les plus gros gagnants avec leur nom
+nettoyer les prints qui ne servent à rien
 Améliorer en faisant en sorte que l'utilisateur s'enregistre avec une adresse mail et qu'il doive valider son compte via cette adresse
 Faire une requête au lancement de l'appli pour vérifier si résultat / permettre à l'utilisateur de faire cette requête / et peut être aussi automatiser cette requête
 améliorer api et créer documentation
-Avoir un outils pour comparer le nombre de match que renvoie chaque spider et voir pour chaque sport le nombre de match avec des dates d'affrontement similaires
-Voir pour parions sport si une solution automatique de récuparation des pages liées aux différents championnats est possible
-Programmer avec pycharm*
-Ne pas utiliser le nom de la compétition ou des équipes pour comparer les cote entre différents bookmakers car il est fort probable que les noms ne soient pas toujours exactement similaires
-Indiquer les paris qui n'ont qu'un seul bookmaker
-Voir comment gérer les pages à appeler pour parions sport et leur évolution ( On ne peut pas automatiser la vérification d'équivalence entre les données récupérées et celle sur le site car elles
-sont générées dynamiquement, pas plus qu'on ne peut comparer d'un site à l'autre car tous les sites n'offrent pas toujours une cote pour un match ou pas en meme temps. Il faut donc trouver un moyen
-de lier toutes les entrées en bdd référencant un même match)
 Ecrire les tests
-Tester la V1 sur tléphone
 mettre le return items de pipeline en commentaire et à utiliser seulement en cas de debug
 Improve objects introspection and see pprint doc
-Améliorer API, voir pour les images et logos
 
 DOCUMENTATION:
 Amelioréer la doc pour les datas winamax
