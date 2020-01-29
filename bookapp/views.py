@@ -142,14 +142,16 @@ def bet():
     cursor = connection.cursor()
     match_id = request.json.get("match_id")
     user_id = request.json.get("user_id")
+    team_selected = request.json.get("team_selected")
     bet = request.json.get("bet")
     cursor.execute("SELECT date_affrontement  FROM rencontre WHERE id=%s", match_id)
     date_match = cursor.fetchone()
     if datetime.now() >=  date_match["date_affrontement"]:
         return jsonify({ "error_message": "Match commencé.Paris indisponible." }), 400
     else:
-        cursor.execute("INSERT INTO paris (rencontre_id, utilisateur_id, mise, resultat_id) VALUES (%s, %s, %s, %s)", (match_id, user_id, bet, 4))
+        cursor.execute("INSERT INTO paris (rencontre_id, utilisateur_id, mise, resultat_id) VALUES (%s, %s, %s, %s)", (match_id, user_id, bet, team_selected))
         cursor.execute("UPDATE utilisateur SET argent = argent - %s WHERE id=%s",(bet, user_id))
+        connection.commit()
         return jsonify({ "succes_message": "Paris enregistré", "bet": bet }), 201
     #Vérifier qu'une cote existe
 

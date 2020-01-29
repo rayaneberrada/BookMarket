@@ -88,10 +88,12 @@ class PageManager(Screen):
             self.ids.bottom.remove_widget(self.submit)
             self.ids.bottom.remove_widget(self.backward)
             self.ids.pages.add_widget(self.sport_page)
+            PageManager.REQUEST_REGION = ""
             PageManager.PAGE -= 1
         elif PageManager.PAGE == 3:
             self.ids.pages.remove_widget(self.league_page)
             self.ids.pages.add_widget(self.region_page)
+            PageManager.REQUEST_MATCHES = ""
             PageManager.PAGE -= 1
         elif PageManager.PAGE == 4:
             self.ids.pages.remove_widget(self.match_page)
@@ -183,25 +185,28 @@ class Match(GridLayout):
     def bet(self, button_text):
         if button_text == "Domicile":
             input_amount = self.ids.input_home.text
+            team_selected = 1
         elif button_text =="Extérieur":
             input_amount = self.ids.input_away.text
+            team_selected = 2
         elif button_text == "Nul":
             input_amount = self.ids.input_draw.text
+            team_selected = 3
         
         if input_amount:
             if input_amount.isdigit():
                 input_amount = int(input_amount)
                 if PageManager.MONEY >= input_amount:
                     headers = {"Content-Type": "application/json"}
-                    params = json.dumps({"bet": input_amount, "user_id": PageManager.USER, "match_id": self.id})
+                    params = json.dumps({"bet": input_amount, "user_id": PageManager.USER, "match_id": self.id, "team_selected": team_selected})
                     req = UrlRequest('http://127.0.0.1:5000/bets', on_success=self.update_player,
                 req_body=params, req_headers=headers)
                 else:   
-                    pass
+                    self.bet_too_high()
             else:
-                pass
+                self.not_a_number()
         else:
-            pass
+            self.empty_input()
 
     def update_player(self, req, result):
         if "succes_message" in result:
@@ -214,6 +219,27 @@ class Match(GridLayout):
     def request_answer(self, message):
         pop = Popup(title='Invalid Form',
                       content=Label(text=message),
+                      size_hint=(None, None), size=(250, 250))
+
+        pop.open()
+
+    def bet_too_high(self):
+        pop = Popup(title='Invalid Form',
+                      content=Label(text="Argent insuffisant"),
+                      size_hint=(None, None), size=(250, 250))
+
+        pop.open()
+
+    def not_a_number(self):
+        pop = Popup(title='Invalid Form',
+                      content=Label(text="La mise doit être un nombre"),
+                      size_hint=(None, None), size=(250, 250))
+
+        pop.open()
+
+    def empty_input(self):
+        pop = Popup(title='Invalid Form',
+                      content=Label(text="Champ vide"),
                       size_hint=(None, None), size=(250, 250))
 
         pop.open()
@@ -259,6 +285,7 @@ class RegionPage(RecycleView):
         PageManager.SPORT_CHOSEN = sport
         requestRegions = UrlRequest('http://127.0.0.1:5000/rencontres/{}/regions'.format(sport), self.parse_json)
 
+
     def parse_json(self, req, result):
         self.data = []
         for value in result["regions"]:
@@ -301,7 +328,7 @@ class SportPage(RecycleView):
     def parse_json(self, req, result):
         self.data = []
         for value in result["sports"]:
-            self.data.append({"text" : value['nom'], "on_press" : functools.partial(self.next_view, value['nom'])})
+            self.data.append({"text" : value['nom'],"name" : value["nom"], "on_press" : functools.partial(self.next_view, value['nom'])})
             self.url_request_sport = req.url
 
 class LoginWindow(Screen):
@@ -387,8 +414,6 @@ class RegisterWindow(Screen):
 
 class WindowManager(ScreenManager):
     pass
-
-
 
 class BookMarket(App):
     DISPLAY = WindowManager()
