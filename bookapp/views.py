@@ -6,16 +6,6 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-class User():
-    # ...
-
-    def hash_password(self, password):
-        self.password_hash = pwd_context.encrypt(password)
-
-    def verify_password(self, password):
-        return pwd_context.verify(password, self.password_hash)
-
-
 connection = pymysql.connect(host='localhost',
                      user='rayane',
                      password='i77EWEsN',
@@ -60,14 +50,12 @@ def competitions(sport_name):
     sport_id = cursor.fetchone()["id"]
 
     if parameters:
-        sql = "SELECT DISTINCT competition FROM rencontre WHERE region IN ("
+        sql = "SELECT DISTINCT competition FROM rencontre WHERE sport_id=%s AND region IN ("
         for parameter in parameters:
             if parameter != parameters[-1]:
-                sql += "'" + parameter + "',"
+                sql += "\"" + parameter + "\","
             else:
-                sql += "'" + parameter + "')"
-        sport_sql = "AND sport_id = %s"
-        sql = sql + sport_sql
+                sql += "\"" + parameter + "\")"
         cursor.execute(sql, sport_id)
     else:
         cursor.execute("SELECT DISTINCT competition FROM rencontre")
@@ -85,24 +73,28 @@ def rencontre():
     parameters = request.args.getlist("competition")
 
     if parameters:
+        cursor.execute("SELECT MAX(date_scraping) FROM rencontre")
+        last_scrap = cursor.fetchone()["MAX(date_scraping)"]
         sql = "SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
-                     cote_exterieure,date_affrontement,diffuseur FROM rencontre WHERE competition IN ("
+                     cote_exterieure,date_affrontement,diffuseur,competition FROM rencontre WHERE date_scraping=%s\
+                     AND competition IN ("
         for parameter in parameters:
             if parameter != parameters[-1]:
-                sql += "'" + parameter + "',"
+                sql += "\"" + parameter + "\","
             else:
-                sql += "'" + parameter + "')"
-        cursor.execute(sql)
+                sql += "\"" + parameter + "\")"
+        sql += " ORDER BY date_affrontement"
+        cursor.execute(sql, last_scrap)
     else:
         cursor.execute("SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
-                     cote_exterieure,date_affrontement,diffuseur FROM rencontre")
+                     cote_exterieure,date_affrontement,diffuseur,competition FROM rencontre ORDER BY date_affrontement")
 
     rows = cursor.fetchall()
     datas = []
     for row in rows:
         datas.append({"cote_nul" : str(row["cote_match_nul"]),"domicile" : row["equipe_domicile"], "cote_dom" :str(row["cote_domicile"]),\
                     "exterieur" : row["equipe_exterieure"], "cote_ext" : str(row["cote_exterieure"]), "date" : row["date_affrontement"],\
-                    "tv" : row["diffuseur"], "id": str(row["id"])})
+                    "tv" : row["diffuseur"], "id": str(row["id"]), "competition": row["competition"]})
         #Voir si on garde les cotes au format string car jsonify n'accepte pas les decimal
     return jsonify(matches=datas)
 
@@ -143,17 +135,30 @@ def bet():
     match_id = request.json.get("match_id")
     user_id = request.json.get("user_id")
     team_selected = request.json.get("team_selected")
+    odd = float(request.json.get("odd"))
     bet = request.json.get("bet")
     cursor.execute("SELECT date_affrontement  FROM rencontre WHERE id=%s", match_id)
     date_match = cursor.fetchone()
     if datetime.now() >=  date_match["date_affrontement"]:
         return jsonify({ "error_message": "Match commencé.Paris indisponible." }), 400
     else:
-        cursor.execute("INSERT INTO paris (rencontre_id, utilisateur_id, mise, resultat_id) VALUES (%s, %s, %s, %s)", (match_id, user_id, bet, team_selected))
+        cursor.execute("INSERT INTO paris (rencontre_id, utilisateur_id, mise, equipe_pariee, cote) VALUES (%s, %s, %s, %s, %s)", (match_id, user_id, bet, team_selected, odd))
         cursor.execute("UPDATE utilisateur SET argent = argent - %s WHERE id=%s",(bet, user_id))
         connection.commit()
         return jsonify({ "succes_message": "Paris enregistré", "bet": bet }), 201
     #Vérifier qu'une cote existe
+
+@app.route('/<user_id>/bets', methods = ['GET'])
+def user_bets(user_id):
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM paris WHERE utilisateur_id=%s ORDER BY date_enregistrement", user_id)
+    bets = cursor.fetchall()
+    for bet in bets:
+        bet["cote"] = str(bet["cote"])
+        cursor.execute("SELECT equipe_domicile, equipe_exterieure, resultat_id, date_affrontement, competition FROM rencontre WHERE id=%s", bet["rencontre_id"])
+        match_infos = cursor.fetchone()
+        bet["match_infos"] = match_infos
+    return jsonify(bets=bets)
 
 if __name__ == "__main__":
     app.run()

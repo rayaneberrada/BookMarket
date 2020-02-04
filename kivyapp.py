@@ -40,6 +40,7 @@ class PageManager(Screen):
         self.region_page = None
         self.league_page = None
         self.match_page = None
+        self.bet_page = None
         self.submit = None
         self.backward = None
         self.create_view(None)
@@ -47,14 +48,14 @@ class PageManager(Screen):
     def create_view(self, choice):
         if PageManager.PAGE == 0:
             self.update_money()
-            self.sport_page = SportPage(self.create_view)
+            self.backward = GoBackward(self.previous_view)
+            self.sport_page = SportPage(self.create_view, self.bets_view)
             self.ids.pages.add_widget(self.sport_page)
             PageManager.PAGE += 1
         elif PageManager.PAGE == 1:
             self.ids.pages.remove_widget(self.sport_page)
             self.region_page = RegionPage(choice)
             self.submit = SubmitButton(self.create_view)
-            self.backward = GoBackward(self.previous_view)
             self.ids.pages.add_widget(self.region_page)
             self.ids.bottom.add_widget(self.submit)
             self.ids.bottom.add_widget(self.backward)
@@ -81,6 +82,12 @@ class PageManager(Screen):
                   content=Label(text='Choisissez au moins un championnat'),
                   size_hint=(None, None), size=(250, 250))
             pop.open()
+        elif PageManager.PAGE == 5:
+            self.ids.pages.remove_widget(self.sport_page)
+            self.bet_page = BetPage()
+            self.ids.pages.add_widget(self.bet_page)
+            self.ids.bottom.add_widget(self.backward)
+
 
     def previous_view(self):
         if PageManager.PAGE == 2:
@@ -100,6 +107,15 @@ class PageManager(Screen):
             self.ids.pages.add_widget(self.league_page)
             self.ids.bottom.add_widget(self.submit)
             PageManager.PAGE -= 1
+        elif PageManager.PAGE == 5:
+            self.ids.pages.remove_widget(self.bet_page)
+            self.ids.pages.add_widget(self.sport_page)
+            self.ids.bottom.remove_widget(self.backward)
+            PageManager.PAGE = 1
+
+    def bets_view(self):
+        PageManager.PAGE = 5
+        self.create_view(None)
 
     def update_money(self):
         self.ids.amount.text = "Solde: " + str(PageManager.MONEY)
@@ -181,16 +197,60 @@ class GoBackward(ButtonBehavior, Image):
 class Disconnect(ButtonBehavior, Image):
     pass
 
+class Bet(GridLayout):
+    def __init__(self, color, **kwargs):
+        self.color = color
+        super(Bet, self).__init__(**kwargs)
+
+
+class BetPage(GridLayout):
+    def __init__(self,**kwargs):
+        super(BetPage, self).__init__(**kwargs)
+        self.bind(minimum_height=self.setter('height'))
+        request_bets = UrlRequest("http://127.0.0.1:5000/{}/bets".format(PageManager.USER), self.parse_json)
+
+    def parse_json(self, req, result):
+        for value in result["bets"]:
+            team_chosen = "Domicile" if value["equipe_pariee"] == 1 else ("Exterieur" if value["equipe_pariee"] == 2 else "Nul")
+            if value["match_infos"]["resultat_id"] == 1:
+                result = value["equipe_domicile"]
+            if value["match_infos"]["resultat_id"] == 2:
+                result = value["equipe_exterieure"]
+            if value["match_infos"]["resultat_id"] == 3:
+                result = "Nul"
+            else:
+                result = "Match pas encore joué"
+
+            if value["match_infos"]["resultat_id"] != value["equipe_pariee"] and value["verifie"] == 1:
+                bet = Bet((0.6, 0, 0, 1))
+                bet.ids.earning.text = "   Pertes: -" + str(value["mise"])
+            elif value["verifie"] == 1:
+                bet = Bet((0, 0.6, 0, 1))
+                bet.ids.earning.text = "  Gains: +" + str(value["mise"]*float(value["cote"]))
+            else:
+                bet = Bet((0.500, 0.500, 0.500, 1))
+                bet.ids.earning.text = "   Gains potentiels: +" + str(value["mise"]*float(value["cote"]))
+
+            bet.ids.title.text = value["match_infos"]["equipe_domicile"] + " vs " + value["match_infos"]["equipe_exterieure"]
+            bet.ids.date.text = "   Date match: " + value["match_infos"]["date_affrontement"]
+            bet.ids.bet.text = "   Pari: " + str(value["mise"]) + " parié sur " + team_chosen + " avec une cote de " + str(value["cote"])
+            bet.ids.result.text = "   " + result
+
+            self.add_widget(bet)
+
 class Match(GridLayout):
     def bet(self, button_text):
         if button_text == "Domicile":
             input_amount = self.ids.input_home.text
+            odd = self.ids.bet_home.text.split()[0]
             team_selected = 1
         elif button_text =="Extérieur":
             input_amount = self.ids.input_away.text
+            odd = self.ids.bet_away.text.split()[0]
             team_selected = 2
         elif button_text == "Nul":
             input_amount = self.ids.input_draw.text
+            odd = self.ids.bet_draw.text.split()[0]
             team_selected = 3
         
         if input_amount:
@@ -198,7 +258,7 @@ class Match(GridLayout):
                 input_amount = int(input_amount)
                 if PageManager.MONEY >= input_amount:
                     headers = {"Content-Type": "application/json"}
-                    params = json.dumps({"bet": input_amount, "user_id": PageManager.USER, "match_id": self.id, "team_selected": team_selected})
+                    params = json.dumps({"bet": input_amount, "odd":odd, "user_id": PageManager.USER, "match_id": self.id, "team_selected": team_selected})
                     req = UrlRequest('http://127.0.0.1:5000/bets', on_success=self.update_player,
                 req_body=params, req_headers=headers)
                 else:   
@@ -247,24 +307,23 @@ class Match(GridLayout):
 class MatchPage(GridLayout):
     def __init__(self,**kwargs):
         super(MatchPage, self).__init__(**kwargs)
-        self.cols = 1
-        self.gridlayout = GridLayout(cols=1, size_hint_y=None,  spacing=10)
-        self.gridlayout.bind(minimum_height=self.gridlayout.setter('height'))
+        self.bind(minimum_height=self.setter('height'))
         
     def add_to_view(self, req, result):
         for value in result["matches"]:
+            tv = value["tv"] if value["tv"] != None else ""
             match = Match()
             match.id = value["id"]
-            match.ids.title.text = value["date"]
+            match.ids.title.text = value["competition"] + "  " + value["date"] + "  " + tv
             match.ids.bet_home.text = value["cote_dom"] + " " + value["domicile"]
             match.ids.bet_draw.text = value["cote_dom"] + " Nul"
             match.ids.bet_away.text = value["cote_ext"] + " " + value["exterieur"]
-            self.gridlayout.add_widget(match)
+            self.add_widget(match)
 
     def create_grid_matches(self):
         print(PageManager.REQUEST_MATCHES)
         requestMatches = UrlRequest('http://127.0.0.1:5000/rencontres?' + PageManager.REQUEST_MATCHES, self.add_to_view)
-        return self.gridlayout
+        return self
 
 class LeaguePage(RecycleView):
     def __init__(self, **kwargs):
@@ -316,10 +375,11 @@ class RegionPage(RecycleView):
 
 
 class SportPage(RecycleView):
-    def __init__(self, next_view, **kwargs):
+    def __init__(self, next_view, bets_view, **kwargs):
         super(SportPage, self).__init__(**kwargs)
         self.data = []
         self.next_view = next_view
+        self.bets_view = bets_view
         self.request_json(None)
 
     def request_json(self, arg):
@@ -330,6 +390,7 @@ class SportPage(RecycleView):
         for value in result["sports"]:
             self.data.append({"text" : value['nom'],"name" : value["nom"], "on_press" : functools.partial(self.next_view, value['nom'])})
             self.url_request_sport = req.url
+        self.data.append({"text" : "Historique paris", "name" : "historique", "on_press" : functools.partial(self.bets_view)})
 
 class LoginWindow(Screen):
     PM = None

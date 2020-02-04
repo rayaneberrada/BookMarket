@@ -24,7 +24,7 @@ class WinamaxResults(scrapy.Spider):
                     for tournament in country["tournaments"]:
                         for match in tournament["matches"]:
                             item["result"] = match["result"]["winner"]
-                            item["reference"] = str(match["id"])
+                            item["reference"] = match["_id"]
                             yield item
             else:
                 continue
