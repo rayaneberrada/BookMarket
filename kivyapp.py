@@ -27,7 +27,7 @@ from kivy.uix.recyclegridlayout import RecycleGridLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
 import json
 
-class PageManager(Screen):
+class ViewManager(Screen):
     PAGE = 0
     REQUEST_REGION = ""
     REQUEST_MATCHES = ""
@@ -35,90 +35,105 @@ class PageManager(Screen):
     MONEY = None
     SPORT_CHOSEN = ""
     def __init__(self, **kwargs):
-        super(PageManager, self).__init__(**kwargs)
+        super(ViewManager, self).__init__(**kwargs)
         self.sport_page = None
         self.region_page = None
         self.league_page = None
         self.match_page = None
         self.bet_page = None
+        self.winner_page = None
         self.submit = None
         self.backward = None
         self.create_view(None)
 
     def create_view(self, choice):
-        if PageManager.PAGE == 0:
+        if ViewManager.PAGE == 0:
             self.update_money()
             self.backward = GoBackward(self.previous_view)
-            self.sport_page = SportPage(self.create_view, self.bets_view)
+            self.sport_page = SportPage(self.create_view, self.bets_view, self.winners_view)
             self.ids.pages.add_widget(self.sport_page)
-            PageManager.PAGE += 1
-        elif PageManager.PAGE == 1:
+            ViewManager.PAGE += 1
+        elif ViewManager.PAGE == 1:
             self.ids.pages.remove_widget(self.sport_page)
             self.region_page = RegionPage(choice)
             self.submit = SubmitButton(self.create_view)
             self.ids.pages.add_widget(self.region_page)
             self.ids.bottom.add_widget(self.submit)
             self.ids.bottom.add_widget(self.backward)
-            PageManager.PAGE += 1
-        elif PageManager.PAGE == 2 and self.REQUEST_REGION != "":
+            ViewManager.PAGE += 1
+        elif ViewManager.PAGE == 2 and self.REQUEST_REGION != "":
             self.ids.pages.remove_widget(self.region_page)
             self.league_page = LeaguePage()
             self.ids.pages.add_widget(self.league_page)
-            PageManager.PAGE += 1
-        elif PageManager.PAGE == 2 and self.REQUEST_REGION == "":
+            ViewManager.PAGE += 1
+        elif ViewManager.PAGE == 2 and self.REQUEST_REGION == "":
             pop = Popup(title='Invalid Request',
                   content=Label(text='Choisissez au moins une région'),
                   size_hint=(None, None), size=(250, 250))
             pop.open()
-        elif PageManager.PAGE == 3 and self.REQUEST_MATCHES != "":
+        elif ViewManager.PAGE == 3 and self.REQUEST_MATCHES != "":
             self.ids.pages.remove_widget(self.league_page)
             self.ids.bottom.remove_widget(self.submit)
             match_manager = MatchPage()
             self.match_page = match_manager.create_grid_matches()
             self.ids.pages.add_widget(self.match_page)
-            PageManager.PAGE += 1
-        elif PageManager.PAGE == 3 and self.REQUEST_MATCHES == "":
+            ViewManager.PAGE += 1
+        elif ViewManager.PAGE == 3 and self.REQUEST_MATCHES == "":
             pop = Popup(title='Invalid Request',
                   content=Label(text='Choisissez au moins un championnat'),
                   size_hint=(None, None), size=(250, 250))
             pop.open()
-        elif PageManager.PAGE == 5:
+        elif ViewManager.PAGE == 5:
             self.ids.pages.remove_widget(self.sport_page)
             self.bet_page = BetPage()
             self.ids.pages.add_widget(self.bet_page)
             self.ids.bottom.add_widget(self.backward)
+        elif ViewManager.PAGE == 6:
+            self.ids.pages.remove_widget(self.sport_page)
+            self.winner_page = WinnerPage()
+            self.ids.pages.add_widget(self.winner_page)
+            self.ids.bottom.add_widget(self.backward)
 
 
     def previous_view(self):
-        if PageManager.PAGE == 2:
+        if ViewManager.PAGE == 2:
             self.ids.pages.remove_widget(self.region_page)
             self.ids.bottom.remove_widget(self.submit)
             self.ids.bottom.remove_widget(self.backward)
             self.ids.pages.add_widget(self.sport_page)
-            PageManager.REQUEST_REGION = ""
-            PageManager.PAGE -= 1
-        elif PageManager.PAGE == 3:
+            ViewManager.REQUEST_REGION = ""
+            ViewManager.PAGE -= 1
+        elif ViewManager.PAGE == 3:
             self.ids.pages.remove_widget(self.league_page)
             self.ids.pages.add_widget(self.region_page)
-            PageManager.REQUEST_MATCHES = ""
-            PageManager.PAGE -= 1
-        elif PageManager.PAGE == 4:
+            ViewManager.REQUEST_MATCHES = ""
+            ViewManager.PAGE -= 1
+        elif ViewManager.PAGE == 4:
             self.ids.pages.remove_widget(self.match_page)
             self.ids.pages.add_widget(self.league_page)
             self.ids.bottom.add_widget(self.submit)
-            PageManager.PAGE -= 1
-        elif PageManager.PAGE == 5:
+            ViewManager.PAGE -= 1
+        elif ViewManager.PAGE == 5:
             self.ids.pages.remove_widget(self.bet_page)
             self.ids.pages.add_widget(self.sport_page)
             self.ids.bottom.remove_widget(self.backward)
-            PageManager.PAGE = 1
+            ViewManager.PAGE = 1
+        elif ViewManager.PAGE == 6:
+            self.ids.pages.remove_widget(self.winner_page)
+            self.ids.pages.add_widget(self.sport_page)
+            self.ids.bottom.remove_widget(self.backward)
+            ViewManager.PAGE = 1
 
     def bets_view(self):
-        PageManager.PAGE = 5
+        ViewManager.PAGE = 5
+        self.create_view(None)
+
+    def winners_view(self):
+        ViewManager.PAGE = 6
         self.create_view(None)
 
     def update_money(self):
-        self.ids.amount.text = "Solde: " + str(PageManager.MONEY)
+        self.ids.amount.text = "Solde: " + str(ViewManager.MONEY)
 
     def logout(self):
         BookMarket.DISPLAY.current = "login"
@@ -153,30 +168,30 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
     def apply_selection(self, rv, index, is_selected):
         ''' Respond to the selection of items in the view. '''
         self.selected = is_selected
-        if PageManager.PAGE == 2:
+        if ViewManager.PAGE == 2:
             arg_to_add = "region=" + urllib.parse.quote(rv.data[index]["text"])
             if is_selected:
-                PageManager.REQUEST_REGION += arg_to_add + "&"
-                print(PageManager.REQUEST_REGION)
+                ViewManager.REQUEST_REGION += arg_to_add + "&"
+                print(ViewManager.REQUEST_REGION)
 
             else:
-                args = PageManager.REQUEST_REGION.split("&")
+                args = ViewManager.REQUEST_REGION.split("&")
                 for arg in args:
                     if arg_to_add == arg:
                         args.remove(arg)
-                PageManager.REQUEST_REGION = "&".join(args)
-        elif PageManager.PAGE == 3:
+                ViewManager.REQUEST_REGION = "&".join(args)
+        elif ViewManager.PAGE == 3:
             arg_to_add = "competition=" + urllib.parse.quote(rv.data[index]["text"])
             if is_selected:
-                PageManager.REQUEST_MATCHES += arg_to_add + "&"
-                print(PageManager.REQUEST_MATCHES)
+                ViewManager.REQUEST_MATCHES += arg_to_add + "&"
+                print(ViewManager.REQUEST_MATCHES)
 
             else:
-                args = PageManager.REQUEST_MATCHES.split("&")
+                args = ViewManager.REQUEST_MATCHES.split("&")
                 for arg in args:
                     if arg_to_add == arg:
                         args.remove(arg)
-                PageManager.REQUEST_MATCHES = "&".join(args)
+                ViewManager.REQUEST_MATCHES = "&".join(args)
 
 class SubmitButton(ButtonBehavior, Image):
     def __init__(self, next_view, **kwargs):
@@ -197,6 +212,20 @@ class GoBackward(ButtonBehavior, Image):
 class Disconnect(ButtonBehavior, Image):
     pass
 
+class WinnerPage(GridLayout):
+    def __init__(self,**kwargs):
+        super(WinnerPage, self).__init__(**kwargs)
+        self.bind(minimum_height=self.setter('height'))
+        request_bets = UrlRequest("http://127.0.0.1:5000/winners", self.parse_json)
+
+    def parse_json(self, req, result):
+        place = 1
+        for value in result["winners"]:
+            description = value["nom"] + " est " + str(place) + " avec un total de " + str(value["argent"])
+            winner = Label(text=description, size_hint_y= None)
+            self.add_widget(winner)
+            place += 1
+
 class Bet(GridLayout):
     def __init__(self, color, **kwargs):
         self.color = color
@@ -207,7 +236,7 @@ class BetPage(GridLayout):
     def __init__(self,**kwargs):
         super(BetPage, self).__init__(**kwargs)
         self.bind(minimum_height=self.setter('height'))
-        request_bets = UrlRequest("http://127.0.0.1:5000/{}/bets".format(PageManager.USER), self.parse_json)
+        request_bets = UrlRequest("http://127.0.0.1:5000/{}/bets".format(ViewManager.USER), self.parse_json)
 
     def parse_json(self, req, result):
         for value in result["bets"]:
@@ -256,9 +285,9 @@ class Match(GridLayout):
         if input_amount:
             if input_amount.isdigit():
                 input_amount = int(input_amount)
-                if PageManager.MONEY >= input_amount:
+                if ViewManager.MONEY >= input_amount:
                     headers = {"Content-Type": "application/json"}
-                    params = json.dumps({"bet": input_amount, "odd":odd, "user_id": PageManager.USER, "match_id": self.id, "team_selected": team_selected})
+                    params = json.dumps({"bet": input_amount, "odd":odd, "user_id": ViewManager.USER, "match_id": self.id, "team_selected": team_selected})
                     req = UrlRequest('http://127.0.0.1:5000/bets', on_success=self.update_player,
                 req_body=params, req_headers=headers)
                 else:   
@@ -270,7 +299,7 @@ class Match(GridLayout):
 
     def update_player(self, req, result):
         if "succes_message" in result:
-            PageManager.MONEY -= result["bet"]
+            ViewManager.MONEY -= result["bet"]
             LoginWindow.PM.update_money()
             self.request_answer(result["succes_message"])
         elif "error_message" in result:
@@ -316,20 +345,22 @@ class MatchPage(GridLayout):
             match.id = value["id"]
             match.ids.title.text = value["competition"] + "  " + value["date"] + "  " + tv
             match.ids.bet_home.text = value["cote_dom"] + " " + value["domicile"]
-            match.ids.bet_draw.text = value["cote_dom"] + " Nul"
+            match.ids.bet_draw.text = value["cote_nul"] + " Nul"
             match.ids.bet_away.text = value["cote_ext"] + " " + value["exterieur"]
+            if value["cote_nul"] == "None":
+                match.remove_widget(match.ids.draw)
             self.add_widget(match)
 
     def create_grid_matches(self):
-        print(PageManager.REQUEST_MATCHES)
-        requestMatches = UrlRequest('http://127.0.0.1:5000/rencontres?' + PageManager.REQUEST_MATCHES, self.add_to_view)
+        print(ViewManager.REQUEST_MATCHES)
+        requestMatches = UrlRequest('http://127.0.0.1:5000/rencontres?' + ViewManager.REQUEST_MATCHES, self.add_to_view)
         return self
 
 class LeaguePage(RecycleView):
     def __init__(self, **kwargs):
         super(LeaguePage, self).__init__(**kwargs)
         self.data = []
-        requestLeagues = UrlRequest("http://127.0.0.1:5000/rencontres/{}/competitions?".format(PageManager.SPORT_CHOSEN) + PageManager.REQUEST_REGION, self.parse_json)
+        requestLeagues = UrlRequest("http://127.0.0.1:5000/rencontres/{}/competitions?".format(ViewManager.SPORT_CHOSEN) + ViewManager.REQUEST_REGION, self.parse_json)
 
     def parse_json(self, req, result):
         self.data = []
@@ -340,8 +371,8 @@ class RegionPage(RecycleView):
     def __init__(self, sport, **kwargs):
         super(RegionPage, self).__init__(**kwargs)
         self.data = []
-        PageManager.REQUEST_REGION = ""
-        PageManager.SPORT_CHOSEN = sport
+        ViewManager.REQUEST_REGION = ""
+        ViewManager.SPORT_CHOSEN = sport
         requestRegions = UrlRequest('http://127.0.0.1:5000/rencontres/{}/regions'.format(sport), self.parse_json)
 
 
@@ -360,26 +391,27 @@ class RegionPage(RecycleView):
         """
 
         req_arg = urllib.parse.quote(req_arg) 
-        if req_arg in PageManager.REQUEST_REGION:
-            args = PageManager.REQUEST_REGION.split("&")
+        if req_arg in ViewManager.REQUEST_REGION:
+            args = ViewManager.REQUEST_REGION.split("&")
             for arg in args:
                 if req_arg in arg:
                     args.remove(arg)
-            PageManager.REQUEST_REGION = "&".join(args)
+            ViewManager.REQUEST_REGION = "&".join(args)
         else:
-            if PageManager.REQUEST_REGION:
-                PageManager.REQUEST_REGION += "&" + arg_to_search + req_arg
+            if ViewManager.REQUEST_REGION:
+                ViewManager.REQUEST_REGION += "&" + arg_to_search + req_arg
             else:
-                PageManager.REQUEST_REGION += arg_to_search + req_arg
-        print(PageManager.REQUEST_REGION)
+                ViewManager.REQUEST_REGION += arg_to_search + req_arg
+        print(ViewManager.REQUEST_REGION)
 
 
 class SportPage(RecycleView):
-    def __init__(self, next_view, bets_view, **kwargs):
+    def __init__(self, next_view, bets_view, winners_view, **kwargs):
         super(SportPage, self).__init__(**kwargs)
         self.data = []
         self.next_view = next_view
         self.bets_view = bets_view
+        self.winners_view = winners_view
         self.request_json(None)
 
     def request_json(self, arg):
@@ -391,6 +423,7 @@ class SportPage(RecycleView):
             self.data.append({"text" : value['nom'],"name" : value["nom"], "on_press" : functools.partial(self.next_view, value['nom'])})
             self.url_request_sport = req.url
         self.data.append({"text" : "Historique paris", "name" : "historique", "on_press" : functools.partial(self.bets_view)})
+        self.data.append({"text" : "Plus gros gagnants", "name" : "gagnants", "on_press" : functools.partial(self.winners_view)})
 
 class LoginWindow(Screen):
     PM = None
@@ -407,10 +440,10 @@ class LoginWindow(Screen):
                 on_failure=self.wrong_request, req_body=params, req_headers=headers)
 
     def connected(self, req, result):
-        PageManager.PAGE = 0
-        PageManager.USER = result["user_id"]
-        PageManager.MONEY = result["money"]
-        LoginWindow.PM = PageManager(name="bets")
+        ViewManager.PAGE = 0
+        ViewManager.USER = result["user_id"]
+        ViewManager.MONEY = result["money"]
+        LoginWindow.PM = ViewManager(name="bets")
         BookMarket.DISPLAY.add_widget(LoginWindow.PM)
         self.ids.name.text = ""
         self.ids.password.text = ""

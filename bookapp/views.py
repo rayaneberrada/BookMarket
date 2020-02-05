@@ -149,7 +149,7 @@ def bet():
     #Vérifier qu'une cote existe
 
 @app.route('/<user_id>/bets', methods = ['GET'])
-def user_bets(user_id):
+def get_user_bets(user_id):
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM paris WHERE utilisateur_id=%s ORDER BY date_enregistrement", user_id)
     bets = cursor.fetchall()
@@ -159,6 +159,13 @@ def user_bets(user_id):
         match_infos = cursor.fetchone()
         bet["match_infos"] = match_infos
     return jsonify(bets=bets)
+
+@app.route('/winners', methods = ['GET'])
+def user_bets():
+    cursor = connection.cursor()
+    cursor.execute("SELECT nom, argent FROM utilisateur ORDER BY argent DESC LIMIT 3")
+    winners = cursor.fetchall()
+    return jsonify(winners=winners)
 
 if __name__ == "__main__":
     app.run()
