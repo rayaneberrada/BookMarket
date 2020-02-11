@@ -1,0 +1,492 @@
+#:import rgba kivy.utils.get_color_from_hex
+
+<BackgroundColor@Widget>
+    background_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<BackgroundLabel@Label+BackgroundColor>
+    background_color: 0, 0, 0, 0
+
+<BackgroundLayout@FloatLayout+BackgroundColor>
+    background_color: 0, 0, 0, 0
+
+<SubmitButton>:
+    source:'images/search.png'  
+    size_hint: (.1, .5)
+    pos: root.width/0.225, 30
+
+<GoBackward>:
+    source:'images/arrow.png'  
+    size_hint: (.1, .5)
+    pos: root.width/1, 30
+
+<Disconnect>
+    source:'logout2.png'  
+    size_hint: (.1, .5)
+    pos: root.width/0.125, 30
+
+<Connect@ButtonBehavior+Image>:
+    source:'images/ball.png'
+
+<SelectableLabel>:
+    # Draw a background to indicate selection
+    canvas.before:
+        Color:
+            rgba: (.0, 0.9, .1, .3) if self.selected else (0, 0, 0, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+<WinnerPage>:
+    cols: 1
+    size_hint_y: None
+    spacing: 10
+
+<Bet>:
+    canvas:
+        Color:
+            rgba: self.color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    size_hint_y: None
+    height: 120
+    cols: 1
+    Label:
+        id: title
+    Label:
+        id: date
+        halign: 'left'
+        text_size: self.size
+    Label:
+        id: bet
+        halign: 'left'
+        text_size: self.size
+    Label: 
+        id: result
+        halign: 'left'
+        text_size: self.size
+    Label:
+        id: earning
+        halign: 'left'
+        text_size: self.size
+
+<BetPage>:
+    cols: 1
+    size_hint_y: None
+    spacing: 10
+
+
+
+<Match>:
+    size_hint_y: None
+    height: 120
+    cols: 1
+    BackgroundLabel:
+        id: title
+        background_color: 0.185, 0.202, 0.235, 1
+
+    GridLayout:
+        cols: 3
+        BackgroundLabel:
+            background_color: 0.185, 0.202, 0.235, 1
+            id: bet_home
+        TextInput:
+            id: input_home
+            text: ""
+
+        Button:
+            id: submit_home
+            text: "Domicile"
+            on_press: root.bet(self.text)
+
+    GridLayout:
+        id: draw
+        cols: 3
+        BackgroundLabel:
+            background_color: 0.185, 0.202, 0.235, 1
+            id: bet_draw
+        TextInput:
+            id: input_draw
+            text: ""
+        Button:
+            id: submit_draw
+            text: "Nul"
+            on_press: root.bet(self.text)
+
+
+    GridLayout:
+        cols: 3
+        BackgroundLabel:
+            background_color: 0.185, 0.202, 0.235, 1
+            id: bet_away
+        TextInput:
+            id: input_away
+            text: ""
+        Button:
+            id: submit_away
+            text: "Extérieur"
+            on_press: root.bet(self.text)
+
+
+<MatchPage>:
+    cols: 1
+    size_hint_y: None
+    spacing: 10
+
+<LeaguePage>:
+    viewclass: 'SelectableLabel'
+    SelectableRecycleBoxLayout:
+        default_size: None, dp(56)
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+        multiselect: True
+        touch_multiselect: True
+
+<SportPage>:
+    viewclass: 'Button'
+    RecycleBoxLayout:
+        default_size: None, dp(56)
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+
+<RegionPage>:
+    viewclass: 'SelectableLabel'
+    SelectableRecycleBoxLayout:
+        default_size: None, dp(56)
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+        multiselect: True
+        touch_multiselect: True
+
+<Line>:
+    cols: 1
+    Label:
+        id: title
+    GridLayout:
+        cols: 3
+        Label:
+            id: infos
+        TextInput:
+            id: bet
+            multiline: False
+        Button:
+            text: "Parier"
+            on_press: self.send_data
+
+<ViewManager>:
+    name: "datadisplay"
+    canvas:
+        Color:
+            rgba: 0.109, 0.158, 0.235, 1
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    GridLayout:
+        cols: 1
+        RelativeLayout:
+            id: top
+            size_hint_y: None
+            height: root.height/5
+            Image:
+                source: 'images/logo.png'
+
+            Label:
+                id: amount
+                font_size: 10              
+                pos: 300, -50
+
+        GridLayout:
+            id: screen
+            size_hint_y: None
+            height: root.height*(3/5)
+            cols: 3
+            canvas:
+                Color:
+                    rgba: 0, 0, 0, 1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+
+            BackgroundLabel:
+                size_hint: None, None
+                height: root.height*(3/5)
+                width: root.width/100
+                background_color: 0.150, 0.168, 0.194, 1
+
+            ScrollView:
+                id: pages
+
+            BackgroundLabel:
+                size_hint: None, None
+                height: root.height*(3/5)
+                width: root.width/100
+                background_color: 0.150, 0.168, 0.194, 1
+
+        RelativeLayout:
+            id: bottom
+            BackgroundLabel:
+                font_size: 40
+                background_color: 0.109, 0.158, 0.235, 1
+                size_hint_y: None
+                height: root.height/5
+
+            Disconnect:
+                on_release:
+                    root.manager.transition.direction = "right"
+                    root.logout()
+
+<LoginWindow>:
+    canvas:
+        Color:
+            rgba: 0.109, 0.158, 0.235, 1
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    GridLayout:
+        cols: 1 
+
+        Image:
+            source:'images/logo.png'
+            size_hint: None, None
+            width: root.width
+            height: root.height / 3
+
+        Widget:
+            size_hint_y: None
+            height: root.height / 25
+
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 15
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 3.75
+                height: root.height / 17
+
+            TextInput:
+                id: name
+                hint_text: "Pseudo"
+                multiline: False
+                size_hint: None, None
+                width: root.width / 2
+                height: root.height / 17
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 10
+                height: root.height / 17
+
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 15
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 3.75
+                height: root.height / 17
+
+            TextInput:
+                id: password
+                hint_text: "Mot de passe"
+                password: True
+                multiline: False
+                size_hint: None, None
+                width: root.width / 2
+                height: root.height / 17
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 25
+                height: root.height / 17
+
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 40
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 14
+                height: root.height / 25
+
+            Connect:
+                size_hint_y: None
+                height: root.height / 15
+                on_press:
+                    root.manager.transition.direction = "left"
+                    root.login()
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 25
+                height: root.height / 25
+
+        Widget:
+            size_hint_y: None
+            height: root.height / 4
+
+        GridLayout:
+            cols: 3
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 3
+                height: root.height / 25
+
+            Label:
+                color: 0,0,0,1
+                text: '[ref=some]Pas de compte? Inscris-toi![/ref]'
+                text_size: root.width/2.09, root.height/9
+                markup: True
+                on_ref_press:
+                    root.manager.transition.direction = "right"
+                    root.register()
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 25
+                height: root.height / 25
+
+        Widget:
+            size_hint_y: None
+            height: root.height/25
+
+<RegisterWindow>:
+
+    canvas:
+        Color:
+            rgba: 0.109, 0.158, 0.235, 1
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    GridLayout:
+        cols: 1 
+
+        Image:
+            source:'images/logo.png'
+            size_hint: None, None
+            width: root.width
+            height: root.height / 3
+
+        Widget:
+            size_hint_y: None
+            height: root.height / 25
+
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 15
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 3.75
+                height: root.height / 17
+
+            TextInput:
+                id: name
+                hint_text: "Pseudo"
+                multiline: False
+                size_hint: None, None
+                width: root.width / 2
+                height: root.height / 17
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 10
+                height: root.height / 17
+
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 15
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 3.75
+                height: root.height / 17
+
+            TextInput:
+                id: password
+                hint_text: "Mot de passe"
+                multiline: False
+                password: True
+                size_hint: None, None
+                width: root.width / 2
+                height: root.height / 17
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 25
+                height: root.height / 17
+
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 40
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 14
+                height: root.height / 25
+
+            Label:
+                color: 0,0,0,1
+                text: '[ref=some][b]S\'inscrire[/b][/ref]'
+                text_size: root.width/9, root.height/35
+                markup: True
+                on_ref_press:
+                    root.manager.transition.direction = "left"
+                    root.create_account()
+                
+            Widget:
+                size_hint: None, None
+                width: root.width / 25
+                height: root.height / 25
+
+        Widget:
+            size_hint_y: None
+            height: root.height / 4
+
+        GridLayout:
+            cols: 3
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 3
+                height: root.height / 25
+
+            Label:
+                color: 0,0,0,1
+                text: '[ref=some]Déjà inscrit? Viens jouer![/ref]'
+                text_size: root.width/2.15, root.height/9
+                markup: True
+                on_ref_press:
+                    root.manager.transition.direction = "left"
+                    root.login()
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 25
+                height: root.height / 25
+
+        Widget:
+            size_hint_y: None
+            height: root.height/25

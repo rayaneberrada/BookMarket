@@ -449,7 +449,6 @@ class LoginWindow(Screen):
         self.ids.password.text = ""
         BookMarket.DISPLAY.current = "bets"
 
-
     def wrong_request(self, req, result):
         pop = Popup(title='Invalid Form',
                       content=Label(text=result["error_message"]),
@@ -462,7 +461,7 @@ class LoginWindow(Screen):
         self.ids.password.text = ""
         BookMarket.DISPLAY.current = "register"
 
-    def invalid_form():
+    def invalid_form(self):
         pop = Popup(title='Invalid Form',
                       content=Label(text='Veuillez remplir tous les champs'),
                       size_hint=(None, None), size=(250, 250))
@@ -484,6 +483,7 @@ class RegisterWindow(Screen):
     def display_message(self, req, result):
         if "succes_message" in result:
             self.request_answer(result["succes_message"])
+            BookMarket.DISPLAY.current = "login"
         elif "error_message" in result:
             self.request_answer(result["error_message"])
 
