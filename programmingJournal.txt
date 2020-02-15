@@ -8,8 +8,6 @@ Pour ce qui est des autres thèmes, ils sont librement définis, bien qu'il s'es
 MISE A JOUR IMPORTANTE:
 Seul le site winamax n'interdisant pas le scrapping de ses données dans à la fois robts.txt et ses cgu, l'application va devenir une plateforme permettant de parier virtuellement
 
-MISE A JOUR IMPORTANTE:
-Seul le site winamax n'interdisant pas le scrapping de ses données dans à la fois robts.txt et ses cgu, l'application va devenir une plateforme permettant de parier virtuellement
 
 Problème:
 | 1947 | Ligue 1 Conforama    |           NULL | Outright        |          4.00 | Outright          |            1.15 |        1 | NULL      | France              | 2020-01-31 20:45:00 | 2020-01-29 13:31:21 |            1 |        NULL | 1000003767
@@ -26,17 +24,31 @@ Gérer l'affichage du tennis et paris avec deux issues
 afficher les plus gros gagnants
 
 TO DO:
+permettre aux utilisateru de créer des groupes pour se comparer et se défier
+mentor@chappuis.net
+Voir organiser mieux code kivy et bonnes pratiques possibles
+test pep8 commentaires
+Mettre appli en ligne et tester sur portable
+Documentation
+Implémenter l'automatisation du scraping
+Améliorer la documentation
+Enlever les outrights de merde
 rendre le champ solde proportionné dans sa position par rapport au reste
-cacher l'écriture du mot de passe et faire un deuxième champ pour le valider et néttoyer les textinput après valdiation
 ajouter des conditions et messages d'erreurs par rapport à la longueur du pseudo et du mot de passe
 ajouter les images au git et organiser mieux les fichier (notamment image et base de données)
 Ajouter un message d'erreur si pas de connexion au moment de la connexion
 Mettre à joru l'argent du joueur dans kivy?
 nettoyer les prints qui ne servent à rien
+aller automatiquement sur la page de connexion si inscription validée
 Améliorer en faisant en sorte que l'utilisateur s'enregistre avec une adresse mail et qu'il doive valider son compte via cette adresse
 améliorer api et créer documentation
 Ecrire les tests
 Improve objects introspection and see pprint doc
+
+DESIGN:
+Pour le design principal, utiliser un cadre de télé pour diffuser les informations, mettre des iamges sur les boutons des sports, et représenter le bout d'une télécomande pour faire office
+de menu
+Couleur: #22B357
 
 PISTE AMELIORATION:
 Permettre de sélectionner seulement les paris gagnant/perdant/en cours
@@ -72,83 +84,3 @@ https://www.youtube.com/watch?v=xoA8aiGrkbw
 deploiement sur android et ios:
 http://www.albertgao.xyz/2017/06/14/how-to-deploy-kivy-app-to-ios-and-android/
 
-PROBLEM TO SOLVE:
-	- Comment doit fonctionner le scraper dans le cas où aucun match n'existe au moment du scrap?Les sites fournissent-ils une key vide ou pas d'informations du tout
-	- Comment l'application va-t-elle réagir quand les paris seront en live? (modification à faier pour être sûr que l'utilisateru ne recoive pas d'alerte durant la phase de live?)
-	- L'application va-t-elle continuer à faire des requête et tenir à jour l'utilisateur en cas d'alerte atteinte pour une côte qu'il a spécifié, ou cela ne se fera-t-il que
-si l'utilisateur est directement sur l'application? (Il faut que des requêtes soient faites de manière régulière pour les paris ajouté en alert)
-	- Certaines équipes ne sont pas appelées de la même facon entre les bookmakers ( exemple: Saint Etienne (winamax) / St Etienne (parions sport) ). Lever une exception
-qui me préviendra si un cas de figure d'un match sans correspondance est trouvé
-	- S'assurer que les noms, logos, éléments affichés n'empiètent pas les uns sur les autres
-	- Vérifier que toutes les informations nécessaires à l'application peuvent être récupérées
-	- VOir comment stocker les choix utilisateur
-	- S'assurer que en choisissant all regions on ne puisse pas sélectionner d'autres régions
-
-Idées d'amélioration:
-	- Permettre aux utilisateurs de parier de la'rgent virtuel pour tester l'évolution de leur bankroll
-
-Football scrap:
-
-il faut d'abord récupér la liste des régions et la liste des compétitions
-Pour chaque catégorie:
-	on récupère category name
-	on récupère matches id
-	pour chaque id de matches id:
-		on récupère mainbetId
-		on récupère tv channels
-		on récupère competitor1 et 2
-		on récupère matchStart converti via timsestamp
-		pour chaque outcomes de maintbetid:
-			on récupère le label
-			si label est égal à competitor1:
-				competitor1 odd égal ouctomes odd 
-			si label est égal à competitor2:
-				competitor2 odd égal outcomes odd
-			si label est égal à competitor3
-				competitor3 odd égal ouctomes odd
-			sinon:
-				raise une exception
-
-
-Rugby scrap:
-id = '12'
-'categories': [800000112, 800000113, 800000111, 800000201, 800000335, 800000115, 800000109, 800000004, 800000443]
-pour region : 800000112
-'categoryName': 'Champions Cup'
-'tournaments': [41152, 35066, 35067, 35068, 35069, 35070]
-"matches":[19902204,19902206,78412]
-"19902204":{"mainBetId":65846495,"moreBets":1,"available":true,"score":"","period":"pre_match",
-"hlType":"to_come","status":"PREMATCH","title":"Leinster - Lyon OU","roundName":"5e journ\u00e9e",
-"tvChannels":"BEIN2","sportId":12,"categoryId":800000112,"tournamentId":35066,"competitor1Id":4210,
-"competitor1Name":"Leinster","competitor2Id":52812,"competitor2Name":"Lyon OU","matchStart":1578834000}
-
-problem to check:
-Warning: 64833011: isn't a match because code is x and not 1, 2 or X 206147575,206147581,206147587
-Warning: 64842922: isn't a match because code is x and not 1, 2 or X
-Warning: 52660904: isn't a match because code is Paris Saint Germain and not 1, 2 or X
-Warning: 53830260: isn't a match because code is Paris Saint Germain and not 1, 2 or X
-Warning: 53083942: isn't a match because code is 0 and not 1, 2 or X
-Warning: 48655741: isn't a match because code is Manchester City and not 1, 2 or X
-Warning: 49310111: isn't a match because code is Manchester City and not 1, 2 or X
-Warning: 53126112: isn't a match because code is 0 and not 1, 2 or X
-Warning: 64762290: isn't a match because code is Over and not 1, 2 or X
-Warning: 51343116: isn't a match because code is Manchester United and not 1, 2 or X
-Warning: 64832707: isn't a match because code is o and not 1, 2 or X https://www.winamax.fr/paris-sportifs/sports/1/35/39
-
-code is over:
-https://www.winamax.fr/paris-sportifs/sports/1/31/33
-58389930
-
-code is o:
-https://www.winamax.fr/paris-sportifs/sports/1/131/904
-64842689
-
-
-
-https://www.winamax.fr/paris-sportifs/sports/1/7/900002742
-[179546845,179546846,179546847,179546848,179546849,179546850]
-
-Logique kivy:
-Requêter les informations nécessaires
-Créer un widget pour le titre et un pour le bas (couleur: #6d9eebff)
-créer pour chaque info un grid dans gridlayout en plus de deux grids de bases que seront favoris et alerts (couleur widgets: #c9daf8ff, couleur barre d'encadrement #d3d3d3ff)

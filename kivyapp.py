@@ -170,10 +170,11 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
         self.selected = is_selected
         if ViewManager.PAGE == 2:
             arg_to_add = "region=" + urllib.parse.quote(rv.data[index]["text"])
-            if is_selected:
+            if is_selected and arg_to_add not in ViewManager.REQUEST_REGION:
                 ViewManager.REQUEST_REGION += arg_to_add + "&"
                 print(ViewManager.REQUEST_REGION)
-
+            elif is_selected and arg_to_add in ViewManager.REQUEST_REGION:
+                pass
             else:
                 args = ViewManager.REQUEST_REGION.split("&")
                 for arg in args:
@@ -182,10 +183,11 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
                 ViewManager.REQUEST_REGION = "&".join(args)
         elif ViewManager.PAGE == 3:
             arg_to_add = "competition=" + urllib.parse.quote(rv.data[index]["text"])
-            if is_selected:
+            if is_selected and arg_to_add not in ViewManager.REQUEST_MATCHES:
                 ViewManager.REQUEST_MATCHES += arg_to_add + "&"
                 print(ViewManager.REQUEST_MATCHES)
-
+            elif is_selected and arg_to_add in ViewManager.REQUEST_MATCHES:
+                pass
             else:
                 args = ViewManager.REQUEST_MATCHES.split("&")
                 for arg in args:
@@ -208,9 +210,6 @@ class GoBackward(ButtonBehavior, Image):
 
     def on_press(self):
         self.previous_view()
-
-class Disconnect(ButtonBehavior, Image):
-    pass
 
 class WinnerPage(GridLayout):
     def __init__(self,**kwargs):
@@ -288,7 +287,7 @@ class Match(GridLayout):
                 if ViewManager.MONEY >= input_amount:
                     headers = {"Content-Type": "application/json"}
                     params = json.dumps({"bet": input_amount, "odd":odd, "user_id": ViewManager.USER, "match_id": self.id, "team_selected": team_selected})
-                    req = UrlRequest('http://127.0.0.1:5000/bets', on_success=self.update_player,
+                    req = UrlRequest('http://127.0.0.1:5000/bets', on_success=self.update_player, on_failure=self.out_of_date,
                 req_body=params, req_headers=headers)
                 else:   
                     self.bet_too_high()
@@ -302,9 +301,16 @@ class Match(GridLayout):
             ViewManager.MONEY -= result["bet"]
             LoginWindow.PM.update_money()
             self.request_answer(result["succes_message"])
-        elif "error_message" in result:
-            self.request_answer(result["error_message"])
 
+    def out_of_date(self, req, result):
+        if "error_message" in result:
+            pop = Popup(title='Invalid Form',
+                          content=Label(text=result["error_message"]),
+                          size_hint=(None, None), size=(250, 250))
+
+            pop.open()
+        else:
+            print(result)
     def request_answer(self, message):
         pop = Popup(title='Invalid Form',
                       content=Label(text=message),
@@ -507,9 +513,12 @@ class RegisterWindow(Screen):
         pop.open()
 
 class WindowManager(ScreenManager):
+    """Class managing which window is displayed for the user"""
     pass
 
 class BookMarket(App):
+    """ This class instantiate necessary objects to allow the user
+    to register and connect. Once run, the kivy app will be launched.""" 
     DISPLAY = WindowManager()
     def build(self):
         screens = [LoginWindow(name="login"), RegisterWindow(name="register")]

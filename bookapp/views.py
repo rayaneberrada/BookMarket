@@ -77,6 +77,7 @@ def rencontre():
         last_scrap = cursor.fetchone()["MAX(date_scraping)"]
         sql = "SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
                      cote_exterieure,date_affrontement,diffuseur,competition FROM rencontre WHERE date_scraping=%s\
+                     AND CURDATE() <= date_affrontement \
                      AND competition IN ("
         for parameter in parameters:
             if parameter != parameters[-1]:
@@ -139,6 +140,7 @@ def bet():
     bet = request.json.get("bet")
     cursor.execute("SELECT date_affrontement  FROM rencontre WHERE id=%s", match_id)
     date_match = cursor.fetchone()
+    print(date_match)
     if datetime.now() >=  date_match["date_affrontement"]:
         return jsonify({ "error_message": "Match commencé.Paris indisponible." }), 400
     else:
@@ -151,7 +153,7 @@ def bet():
 @app.route('/<user_id>/bets', methods = ['GET'])
 def get_user_bets(user_id):
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM paris WHERE utilisateur_id=%s ORDER BY date_enregistrement", user_id)
+    cursor.execute("SELECT * FROM paris WHERE utilisateur_id=%s ORDER BY date_enregistrement DESC", user_id)
     bets = cursor.fetchall()
     for bet in bets:
         bet["cote"] = str(bet["cote"])
