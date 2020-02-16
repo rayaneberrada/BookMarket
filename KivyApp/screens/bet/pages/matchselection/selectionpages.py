@@ -27,7 +27,6 @@ class SportPage(RecycleView):
         self.data = []
         for value in result["sports"]:
             self.data.append({"text" : value['nom'],"name" : value["nom"], "on_press" : functools.partial(self.next_view, value['nom'])})
-            self.url_request_sport = req.url
         self.data.append({"text" : "Historique paris", "name" : "historique", "on_press" : functools.partial(self.bets_view)})
         self.data.append({"text" : "Plus gros gagnants", "name" : "gagnants", "on_press" : functools.partial(self.winners_view)})
 

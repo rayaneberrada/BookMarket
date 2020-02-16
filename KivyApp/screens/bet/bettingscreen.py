@@ -21,7 +21,7 @@ class BettingScreen(Screen):
         self.screenmanager = screenmanager
         ###Pages###
         self.current_page = 0
-        self.pages = [SportPage(self)]
+        self.pages = []
         ###Buttons###
         self.submit = SubmitButton(self.create_view)
         self.backward = GoBackward(self.previous_view)
@@ -30,43 +30,73 @@ class BettingScreen(Screen):
         self.money = money
         self.sport_chosen = ""
 
-        self.ids.pages.add_widget(self.pages[0])
         self.create_view(None)
 
     def create_view(self, choice):
-        if self.current_page == 0:
-            self.update_money()
-        elif self.current_page == 1:
-            self.sport_chosen = choice
-            self.update_view(RegionPage(self, choice))
-        elif self.current_page == 2 and self.pages[1].args != "":
-            self.update_view(LeaguePage(self, self.pages[1].args))
-        elif self.current_page == 2 and self.pages[1].args == "":
-            print(self.region_args)
-            pop = Popup(title='Invalid Request',
-                  content=Label(text='Choisissez au moins une région'),
-                  size_hint=(None, None), size=(250, 250))
-            pop.open()
-        elif self.current_page == 3 and self.pages[1].args != "":
-            self.ids.bottom.remove_widget(self.submit)
-            self.update_view(MatchPage(self))
-        elif self.current_page == 3 and self.match_args == "":
-            pop = Popup(title='Invalid Request',
-                  content=Label(text='Choisissez au moins un championnat'),
-                  size_hint=(None, None), size=(350, 350))
-            pop.open()
-        elif self.current_page == 5:
-            self.ids.pages.remove_widget(self.pages[0])
-            self.pages.append(BetPage(self.username))
-            self.ids.pages.add_widget(self.pages[1])
-            self.ids.bottom.add_widget(self.backward)
-        elif self.current_page == 6:
-            self.ids.pages.remove_widget(self.pages[0])
-            self.pages.append(BestPlayerPage())
-            self.ids.pages.add_widget(self.pages[1])
-            self.ids.bottom.add_widget(self.backward)
+        self.sport_chosen = choice if choice else self.sport_chosen
+        page = {
+            0: self.create_sport_page,
+            1: self.create_region_page,
+            2: self.create_league_page,
+            3: self.create_match_page
+        }.get(self.current_page)
+        page()
+
+    def create_sport_page(self):
+        self.pages.append(SportPage(self))
+        self.ids.pages.add_widget(self.pages[0])
+        self.update_money()
         self.current_page += 1
 
+    def create_region_page(self):
+        self.update_view(RegionPage(self, self.sport_chosen))
+        self.update_money()
+        self.current_page += 1
+
+    def create_league_page(self):
+        regions_request_args = self.pages[1].args
+        if  regions_request_args != "":
+            self.update_view(LeaguePage(self, self.pages[1].args))
+            self.update_money()
+            self.current_page += 1
+        else:
+            self.empty_args()
+
+    def create_match_page(self):
+        league_request_args = self.pages[2].args
+        if  league_request_args != "":
+            self.update_view(MatchPage(self))
+            self.ids.bottom.remove_widget(self.submit)
+            self.update_money()
+            self.current_page += 1
+        else:
+            self.empty_args()
+
+    def create_bets_page(self):
+        self.ids.pages.remove_widget(self.pages[0])
+        self.pages.append(BetPage(self.username))
+        self.ids.pages.add_widget(self.pages[1])
+        self.ids.bottom.add_widget(self.backward)       
+
+    def create_winners_page(self):
+        self.ids.pages.remove_widget(self.pages[0])
+        self.pages.append(BestPlayerPage())
+        self.ids.pages.add_widget(self.pages[1])
+        self.ids.bottom.add_widget(self.backward)
+
+    def update_view(self, page_to_add):
+        self.ids.pages.remove_widget(self.pages[self.current_page - 1])
+        self.pages.append(page_to_add)
+        self.ids.pages.add_widget(self.pages[self.current_page])
+        if self.current_page == 1:
+            self.ids.bottom.add_widget(self.submit)
+            self.ids.bottom.add_widget(self.backward)
+
+    def empty_args(self):
+            pop = Popup(title='Invalid Request',
+                  content=Label(text='Saisissez une réponse'),
+                  size_hint=(None, None), size=(250, 250))
+            pop.open()
 
     def previous_view(self):
         if 5 > self.current_page:
@@ -81,17 +111,10 @@ class BettingScreen(Screen):
                 self.ids.bottom.add_widget(self.submit)
         else:
             self.ids.pages.remove_widget(self.pages[1])
+            self.ids.bottom.remove_widget(self.backward)
             self.pages.pop(1)
             self.current_page == 1
             self.ids.pages.add_widget(self.pages[0]) 
-
-    def update_view(self, page_to_add):
-        self.ids.pages.remove_widget(self.pages[self.current_page - 1])
-        self.pages.append(page_to_add)
-        self.ids.pages.add_widget(self.pages[self.current_page])
-        if self.current_page == 1:
-            self.ids.bottom.add_widget(self.submit)
-            self.ids.bottom.add_widget(self.backward)
 
     def bets_view(self):
         self.current_page = 5
@@ -106,5 +129,3 @@ class BettingScreen(Screen):
 
     def logout(self):
         self.screenmanager.display.current = "login"
-        while self.current_page != 1:
-            self.previous_view()

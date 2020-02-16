@@ -18,6 +18,7 @@ class MatchPage(GridLayout):
 
         
     def add_to_view(self, req, result):
+        print(result)
         for value in result["matches"]:
             tv = value["tv"] if value["tv"] != None else ""
             match = Match(self.screen)

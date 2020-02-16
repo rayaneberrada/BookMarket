@@ -88,7 +88,7 @@ def rencontre():
         cursor.execute(sql, last_scrap)
     else:
         cursor.execute("SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
-                     cote_exterieure,date_affrontement,diffuseur,competition FROM rencontre ORDER BY date_affrontement")
+                     cote_exterieure,date_affrontement,diffuseur, competition FROM rencontre ORDER BY date_affrontement")
 
     rows = cursor.fetchall()
     datas = []
