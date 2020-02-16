@@ -1,0 +1,63 @@
+{
+  "TOP 14": [
+    "Racing 92",
+    "Bordeaux-Bègles",
+    "Clermont",
+    "Agen",
+    "Pau",
+    "Toulon",
+    "La Rochelle",
+    "Castres",
+    "Montpellier",
+    "Lyon OU",
+    "Brive",
+    "Stade Francais",
+    "Stade Toulousain",
+    "Bayonne"
+  ],
+  "PRO D2": [
+    "Perpignan",
+    "Biarritz",
+    "Provence Rugby",
+    "Valence Romans",
+    "Vannes",
+    "Soyaux Angoulême",
+    "Béziers",
+    "Montauban",
+    "Carcassonne",
+    "Aurillac",
+    "Nevers",
+    "Colomiers",
+    "Grenoble",
+    "Rouen",
+    "Oyonnax",
+    "Mont-De-Marsan"
+  ],
+  "Champions Cup": [
+    "Bath",
+    "Clermont",
+    "Northampton Saints",
+    "Leinster",
+    "Lyon OU",
+    "Trévise",
+    "La Rochelle",
+    "Glasgow Warriors",
+    "Ulster",
+    "Harlequins",
+    "Ospreys",
+    "Racing 92",
+    "Munster",
+    "Saracens",
+    "Gloucester",
+    "Connacht",
+    "Sale Sharks",
+    "Exeter Chiefs",
+    "Stade Toulousain",
+    "Montpellier"
+  ],
+  "Leagues": [
+    "TOP 14",
+    "PRO D2",
+    "Champions Cup"
+  ]
+}

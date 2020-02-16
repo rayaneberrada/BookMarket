@@ -1,0 +1,122 @@
+<Connect@ButtonBehavior+Image>:
+    source:'images/ball.png'
+
+<LoginScreen>:
+    canvas:
+        Color:
+            rgba: 0.109, 0.158, 0.235, 1
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    GridLayout:
+        cols: 1 
+
+        Image:
+            source:'images/logo.png'
+            size_hint: None, None
+            width: root.width
+            height: root.height / 3
+
+        Widget:
+            size_hint_y: None
+            height: root.height / 25
+
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 15
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 3.75
+                height: root.height / 17
+
+            TextInput:
+                id: name
+                hint_text: "Pseudo"
+                multiline: False
+                size_hint: None, None
+                width: root.width / 2
+                height: root.height / 17
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 10
+                height: root.height / 17
+
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 15
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 3.75
+                height: root.height / 17
+
+            TextInput:
+                id: password
+                hint_text: "Mot de passe"
+                password: True
+                multiline: False
+                size_hint: None, None
+                width: root.width / 2
+                height: root.height / 17
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 25
+                height: root.height / 17
+
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 40
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 14
+                height: root.height / 25
+
+            Connect:
+                size_hint_y: None
+                height: root.height / 15
+                on_press:
+                    root.manager.transition.direction = "left"
+                    root.login()
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 25
+                height: root.height / 25
+
+        Widget:
+            size_hint_y: None
+            height: root.height / 4
+
+        GridLayout:
+            cols: 3
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 3
+                height: root.height / 25
+
+            Label:
+                color: 0,0,0,1
+                text: '[ref=some]Pas de compte? Inscris-toi![/ref]'
+                text_size: root.width/2.09, root.height/9
+                markup: True
+                on_ref_press:
+                    root.manager.transition.direction = "right"
+                    root.register()
+
+            Widget:
+                size_hint: None, None
+                width: root.width / 25
+                height: root.height / 25
+
+        Widget:
+            size_hint_y: None
+            height: root.height/25
