@@ -12,6 +12,7 @@ flask = "*"
 kivy = "*"
 passlib = "*"
 pytest = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.6"
