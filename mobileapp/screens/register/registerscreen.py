@@ -26,7 +26,7 @@ class RegisterScreen(Screen):
         username = self.ids.name.text.strip()
         password = self.ids.password.text.strip()
         if not username or not password:
-            self.popup_message('Veuillez remplir tous les champs')
+            return self.popup_message('Veuillez remplir tous les champs')
         else:
             params = json.dumps({"username": username, "password": password})
             headers = {"Content-Type": "application/json"}
@@ -40,20 +40,20 @@ class RegisterScreen(Screen):
         the user is sent back on the login page.
         """
         if "succes_message" in result:
-            self.popup_message(result["succes_message"])
-            login()
+            self.login()
+            return self.popup_message(result["succes_message"])
         elif "error_message" in result:
-            self.popup_message(result["error_message"])
-
+            return self.popup_message(result["error_message"])
 
     def popup_message(self, message):
         """
         Popup displayed to the user showing the message used in argument.
         """
-        pop = Popup(content=Label(text=message),
-                    size_hint=(None, None), size=(250, 250))
+        message = Popup(content=Label(text=message),
+                        size_hint=(None, None), size=(250, 250))
+        message.open()
 
-        pop.open()
+        return message.content.text
 
     def login(self):
         """

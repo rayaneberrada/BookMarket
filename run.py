@@ -1,4 +1,4 @@
-from FreeBetAPI import app
+from freebetapi import app
 
 if __name__ == "__main__":
 	app.run(debug=True)

@@ -7,10 +7,9 @@ from ScreenManager(WindowManager) when the user connect.It happens inside the lo
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 
-import freebet_kv
 from screens.login.loginscreen import LoginScreen
 from screens.register.registerscreen import RegisterScreen
-
+from screens.bet.bettingscreen import BettingScreen
 
 class WindowManager(ScreenManager):
     """Class managing which screen view is displayed for the user"""
@@ -32,4 +31,5 @@ class FreeBet(App):
         return self.display
 
 if __name__ == "__main__":
+    import freebet_kv
     FreeBet().run()
