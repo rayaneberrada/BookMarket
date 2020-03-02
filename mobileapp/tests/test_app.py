@@ -2,7 +2,7 @@
 Test checking FreeBet object instantiate the registering and login screens
 before displaying the login one.
 """
-from freebet import FreeBet
+from main import FreeBet
 
 class TestFreeBet:
     object_to_test = FreeBet()

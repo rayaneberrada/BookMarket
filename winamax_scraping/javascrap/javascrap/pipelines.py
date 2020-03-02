@@ -40,30 +40,22 @@ class JavascrapPipeline(object):
         elif spider.name == 'winamaxResultsScraping':
             cursor.execute("SELECT id FROM rencontre WHERE match_reference=%s", item["reference"])
             matches = cursor.fetchall()
-            raise Warning(matches)
             for match in matches:
-                if match["id"] == None:
-                    return None
-                else:
-                    cursor.execute("SELECT resultat_id FROM rencontre WHERE id=%s", match["id"])
-                    current_result = cursor.fetchone()
-                    if current_result == None:
-                        result = "Domicile" if item["result"] == "home" else "Exterieur" if item["result"] == "away" else "Nul"
-                        cursor.execute("SELECT id FROM resultat WHERE statut=%s", result)
-                        result_id = cursor.fetchone()["id"]
-                        params = (result_id, match["id"])
-                        cursor.execute("UPDATE rencontre SET resultat_id=%s WHERE id=%s", params)
-                        cursor.execute("SELECT * FROM paris WHERE rencontre_id=%s", match["id"])
-                        bets = cursor.fetchall()
-                        for bet in bets:
-                            if bet["result_id"] == result_id:
-                                winning = bet["mise"]*bet["cote"]
-                                cursor.execute("UPDATE utilisateur SET argent = argent + %s WHERE id=%s", (winning, bet["utilisateur_id"]))
-                                cursor.execute("UPDATE paris SET verifie=1 WHERE id=%s", bet["id"])
+                cursor.execute("SELECT resultat_id FROM rencontre WHERE id=%s", match["id"])
+                current_result = cursor.fetchone()["resultat_id"]
+                # can help for debugging: print(match["id"], current_result, item["result"])
 
+                if current_result == None:
+                    result = 1 if item["result"] == "home" else 2 if item["result"] == "away" else 3
+                    params = (result, match["id"])
+                    cursor.execute("UPDATE rencontre SET resultat_id=%s WHERE id=%s", params)
 
-        
+                    cursor.execute("SELECT * FROM paris WHERE rencontre_id=%s", match["id"])
+                    bets = cursor.fetchall()
+                    for bet in bets:
+                        if bet["result_id"] == result:
+                            winning = bet["mise"]*bet["cote"]
+                            cursor.execute("UPDATE utilisateur SET argent = argent + %s WHERE id=%s", (winning, bet["utilisateur_id"]))
+                            cursor.execute("UPDATE paris SET verifie=1 WHERE id=%s", bet["id"])
+
         connection.commit()
-
-        #Uncomment return item can help for debugging
-        #return item

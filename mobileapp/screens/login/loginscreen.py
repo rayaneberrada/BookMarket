@@ -32,7 +32,7 @@ class LoginScreen(Screen):
 
         params = json.dumps({"username": username, "password": password})
         headers = {"Content-Type": "application/json"}
-        return UrlRequest('http://127.0.0.1:5000/login', on_success=self.connect,
+        return UrlRequest('http://206.189.118.233/login', on_success=self.connect,
                           on_failure=wrong_request, req_body=params, req_headers=headers)
 
     def connect(self, req, result):
@@ -60,9 +60,15 @@ def wrong_request(req, result):
     """
     If UrlRequest send back a failure code, a popup appears with the reason of the failure
     """
-    message = Popup(title='Invalid Form',
+    if "error_message" in result:
+        message = Popup(title='Invalid Form',
                     content=Label(text=result["error_message"]),
                     size_hint=(None, None), size=(250, 250))
+    else:
+        message = Popup(title='Invalid Form',
+                    content=Label(text="Connexion indisponible"),
+                    size_hint=(None, None), size=(250, 250))
+
     message.open()
     return message.content.text
 

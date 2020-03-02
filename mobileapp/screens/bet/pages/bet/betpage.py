@@ -11,7 +11,7 @@ class BetPage(GridLayout):
     def __init__(self, user, **kwargs):
         super(BetPage, self).__init__(**kwargs)
         self.bind(minimum_height=self.setter('height'))
-        request_bets = UrlRequest("http://127.0.0.1:5000/{}/bets".format(user), self.parse_json)
+        request_bets = UrlRequest("http://206.189.118.233/{}/bets".format(user), self.parse_json)
 
     def parse_json(self, req, result):
         """

@@ -11,7 +11,7 @@ class WinamaxResults(scrapy.Spider):
     download_delay = 2.0
 
     def start_requests(self):
-        self.start_time = time.time()     
+        self.start_time = time.time()
         yield scrapy.http.Request('https://lsc.fn.sportradar.com/winamaxfr/fr/Europe:Helsinki/gismo/event_fullfeed/-1')
 
     def parse(self, response):
@@ -26,7 +26,7 @@ class WinamaxResults(scrapy.Spider):
                             item["result"] = match["result"]["winner"]
                             item["reference"] = match["_id"]
                             yield item
+                            # print item adding sport["name"] and match["teams"]["home"]["name"] for help for debugging
             else:
                 continue
 
-            

@@ -15,7 +15,7 @@ class BestPlayerPage(GridLayout):
         super(BestPlayerPage, self).__init__(**kwargs)
         self.cols = 1
         self.bind(minimum_height=self.setter('height'))
-        UrlRequest("http://127.0.0.1:5000/winners", self.parse_json)
+        UrlRequest("http://206.189.118.233/winners", self.parse_json)
 
     def parse_json(self, req, result):
         """

@@ -26,7 +26,7 @@ class SportPage(RecycleView):
         """
         Request on our API the sport avaialble for betting
         """
-        UrlRequest('http://127.0.0.1:5000/sports', self.parse_json)
+        UrlRequest('http://206.189.118.233/sports', self.parse_json)
 
     def parse_json(self, req, result):
         """
@@ -53,7 +53,7 @@ class RegionPage(RecycleView):
         self.data = []
         self.screen = screen
         self.args = ""
-        UrlRequest('http://127.0.0.1:5000/rencontres/{}/regions'.format(sport),
+        UrlRequest('http://206.189.118.233/rencontres/{}/regions'.format(sport),
                    self.parse_json)
 
     def parse_json(self, req, result):
@@ -74,7 +74,7 @@ class LeaguePage(RecycleView):
         self.data = []
         self.screen = screen
         self.args = ""
-        UrlRequest("http://127.0.0.1:5000/rencontres/{}/competitions?".format(self.screen.sport_chosen) + request_args,
+        UrlRequest("http://206.189.118.233/rencontres/{}/competitions?".format(self.screen.sport_chosen) + request_args,
                    self.parse_json)
 
     def parse_json(self, req, result):

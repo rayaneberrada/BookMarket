@@ -18,7 +18,7 @@ class MatchPage(GridLayout):
         self.league_args = screen.pages[2].args
         self.screen = screen
         self.bind(minimum_height=self.setter('height'))
-        UrlRequest('http://127.0.0.1:5000/rencontres?' + self.league_args, self.add_to_view)
+        UrlRequest('http://206.189.118.233/rencontres?' + self.league_args, self.add_to_view)
 
 
     def add_to_view(self, req, result):
@@ -64,7 +64,7 @@ class Match(GridLayout):
                     headers = {"Content-Type": "application/json"}
                     params = json.dumps({"bet": input_amount, "odd":odd, "user_id": self.screen.username,
                                          "match_id": self.id, "team_selected": team_selected})
-                    UrlRequest('http://127.0.0.1:5000/bets', on_success=self.update_player,
+                    UrlRequest('http://206.189.118.233/bets', on_success=self.update_player,
                                on_failure=self.out_of_date, req_body=params, req_headers=headers)
                 else:
                     return self.pop_message("Argent insuffisant")

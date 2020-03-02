@@ -41,7 +41,7 @@ class TestLoginScreen:
     def test_login_account_with_credentials(self):
         self.object_to_test.ids.name.text = "username"
         self.object_to_test.ids.password.text = "password"
-        assert self.object_to_test.login().url == 'http://127.0.0.1:5000/login'
+        assert self.object_to_test.login().url == 'http://206.189.118.233/login'
 
     def test_connect(self, monkeypatch):
         def mock_connect():

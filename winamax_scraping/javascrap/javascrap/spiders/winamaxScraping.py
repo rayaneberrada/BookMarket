@@ -27,7 +27,7 @@ class WinamaxrugbySpider(scrapy.Spider):
             sport_id = str(sport_id)
             if datas["sports"][sport_id]["sportName"] in sports_to_scrap:
                 #We define here which sport we are going to scrap
-                regions = datas["sports"][sport_id]["categories"]        
+                regions = datas["sports"][sport_id]["categories"]
                 for region_id in regions:
                     competitions = datas["categories"][str(region_id)]["tournaments"]
                     region_name = datas["categories"][str(region_id)]["categoryName"]
@@ -35,7 +35,7 @@ class WinamaxrugbySpider(scrapy.Spider):
                     # For exemple https://www.winamax.fr/paris-sportifs/sports/1 is referring to football.
                     # It means that we need to look through every single region url reference and every
                     # competition related to get all the informations we need.
-                    # For exemple with: https://www.winamax.fr/paris-sportifs/sports/1/7/884 
+                    # For exemple with: https://www.winamax.fr/paris-sportifs/sports/1/7/884
                     # 7 refers to France datas and 884 to the Coupe de la ligue datas.
                     # Scraping this url will allow us to access matches and odds related to that competition
                     for competition_id in competitions:
@@ -62,7 +62,7 @@ class WinamaxrugbySpider(scrapy.Spider):
             item["time_scraped"] = datetime.datetime.fromtimestamp(self.start_time).strftime('%Y-%m-%d %H:%M:%S')
 
             if "tvChannels" in match_datas:
-                item["broadcasters"] = match_datas["tvChannels"] 
+                item["broadcasters"] = match_datas["tvChannels"]
             else:
                 item["broadcasters"] = None
 
@@ -72,11 +72,12 @@ class WinamaxrugbySpider(scrapy.Spider):
             item["reference"] = str(match_id)
             item["league"] = datas["tournaments"][competition]["tournamentName"]
             item["playing_time"] = datetime.datetime.fromtimestamp(match_datas["matchStart"]).strftime('%Y-%m-%d %H:%M')
+            item["playing_time"] = item["playing_time"] + datetime.timedelta(hours=1)
 
             bet_id = str(match_datas["mainBetId"])
             odds_id = datas["bets"][bet_id]["outcomes"]
             item["odd_draw"] = None
-        
+
             if len(datas["bets"][bet_id]["outcomes"]) not in [2, 3]:
                 print("The bet n° " + bet_id + " at url: " + response.url + " isn't a match")
                 continue
