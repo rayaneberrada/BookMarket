@@ -1,11 +1,19 @@
 language: python
 python:
   - "3.6.8"
-# command to install dependencies
+
+dist: bionic
+services:
+  - xvfb
+
 install:
   - pip install pipenv
+  - sudo apt-get install python3-pip
+  - sudo apt-get install cython3 python3-dev
+  - sudo apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
+  - python -m pip install git+https://github.com/kivy/kivy.git@master
   - pipenv install
-# command to run tests
+
 script:
   - cd mobileapp
-  - pytest # or py.test for Python versions 3.5 and below
+  - xvfb-run -a pytest
