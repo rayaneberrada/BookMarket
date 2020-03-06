@@ -123,7 +123,6 @@ class TestMatch:
         """
         bet_creator = self.object_to_test.create_bet()
         assert bet_creator.ids.home.group == "bet_choice"
-        assert bet_creator.ids.draw.group == "bet_choice"
         assert bet_creator.ids.away.group == "bet_choice"
         assert len(bet_creator.ids) == 9
         assert bet_creator.ids.input_odd
@@ -136,14 +135,17 @@ class TestMatch:
         filled
         """
         bet_creator = self.object_to_test.create_bet()
-        bet_creator.bet()
-        assert bet_creator.ids.error_message.text == "Vous devez remplir tous les champs"
-        bet_creator.ids.odd.text == "Exemple échec car pas un nombre"
-        bet_creator.bet()
-        assert bet_creator.ids.error_message.text == "Vous devez choisir un nombre pour la côte"
-        bet_creator.ids.money.text == "Exemple échec car pas un nombre"
-        bet_creator.bet()
-        assert bet_creator.ids.error_message.text == "Vous devez choisir un nombre pour la somme"
+        bet_creator.save_bet()
+        assert bet_creator.ids.error.text == "Vous devez entrer un nombre dans côte et mise"
+        bet_creator.ids.input_odd.text = "5"
+        bet_creator.save_bet()
+        assert bet_creator.ids.error.text == "Vous devez entrer un nombre dans côte et mise"
+        bet_creator.ids.input_money.text = "500"
+        bet_creator.save_bet()
+        assert bet_creator.ids.error.text == "Vous n'avez pas les fonds suffisants"
+        bet_creator.ids.input_money.text = "5"
+        bet_creator.save_bet()
+        assert bet_creator.ids.error.text == "Vous devez choisir un résultat"
 
     @patch("screens.bet.pages.match.matchpage.Match.quit_popup")
     @patch("screens.bet.pages.match.matchpage.UrlRequest")

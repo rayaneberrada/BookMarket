@@ -121,7 +121,11 @@ class Match(GridLayout):
         return pop
 
     def create_bet(self):
-        bet_interface = BetCreation(self.screen.username, self.id, self.ids.bet_home.text,
+        """
+        Instantiate the popup widget with the informations of the bet the player want
+        to use as a model
+        """
+        bet_interface = BetCreation(self.screen.username, self.screen.money, self.id, self.ids.bet_home.text,
                                     self.ids.bet_draw.text, self.ids.bet_away.text)
         bet_interface.id = self.id
         bet_interface.ids.home.text = self.ids.bet_home.text
@@ -133,13 +137,17 @@ class Match(GridLayout):
         return bet_interface
 
 class BetCreation(Popup):
-    def __init__(self, username, bet_id, home, draw, away, **kwargs):
+    """
+    Create a popup that the player can use to create a bet that other players will
+    be able to bet against
+    """
+    def __init__(self, username, money, bet_id, home, draw, away, **kwargs):
         super(BetCreation, self).__init__(**kwargs)
         self.username = username
+        self.user_money = money
         self.bet_id = bet_id
         self.ids.home.text = home
         self.ids.away.text = away
-        print(draw)
         if "None" in draw:
             print("yes")
             self.ids.button_choice.remove_widget(self.ids.draw)
@@ -147,7 +155,27 @@ class BetCreation(Popup):
             self.ids.draw.text = draw
 
     def save_bet(self):
-        headers = {"Content-Type": "application/json"}
-        params = json.dumps({"bet": self.ids.input_money, "odd":self.ids.input_odd, "user_id": self.screen.username,
-                                "match_id": self.id, "team_selected": team_selected})
-        UrlRequest('http://206.189.118.233/bets', req_body=params, req_headers=headers)
+
+        for widget in self.ids.button_choice.children:
+            selection = None
+            if widget.state != "down":
+                self.ids.error.text = "Vous devez choisir un résultat"
+                continue
+            else:
+                self.ids.error.text = ""
+                selection = widget.text
+                break
+
+        if self.ids.input_money.text.isdigit() and self.ids.input_odd.text.isdigit():
+            odd = int(self.ids.input_odd.text)
+            money = int(self.ids.input_money.text)
+            if odd*money > self.user_money:
+                self.ids.error.text = "Vous n'avez pas les fonds suffisants"
+        else:
+            self.ids.error.text = "Vous devez entrer un nombre dans côte et mise"
+
+        if self.ids.error.text == "":
+            headers = {"Content-Type": "application/json"}
+            params = json.dumps({"bet":money, "odd":odd, "user_id": self.screen.username,
+                                 "match_id": self.id, "team_selected": team_selected})
+            UrlRequest('http://206.189.118.233/bets', req_body=params, req_headers=headers)
