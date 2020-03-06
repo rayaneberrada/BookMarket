@@ -102,7 +102,7 @@ class TestMatch:
         assert self.object_to_test.ids.bet_home.text == "3.05 France"
         assert self.object_to_test.ids.bet_draw.text == "3.25 Nul"
         assert self.object_to_test.ids.bet_away.text == "2.35 Allemagne"
-        assert len(self.object_to_test.children) == 4
+        assert len(self.object_to_test.children) == 5
 
     def test_instantiate_match_without_draw(self):
         """
@@ -115,19 +115,22 @@ class TestMatch:
 
         self.object_to_test.instantiate_match(response)
         assert self.object_to_test.ids.title.text == "Groupe F  Tue, 16 Jun 2020 21:00:00 GMT  "
-        assert len(self.object_to_test.children) == 3
+        assert len(self.object_to_test.children) == 4
 
-    def check_popup_bet_creation(self):
+    def test_popup_bet_creation(self):
         """
         Check that the popu contained the expected row and values associated
         """
         bet_creator = self.object_to_test.create_bet()
-        assert len(bet_creator.ids.paris) == 3
-        assert bet_creator.ids.odd
-        assert bet_creator.ids.money
-        assert len(bet_creator.ids.bouton) == 2
+        assert bet_creator.ids.home.group == "bet_choice"
+        assert bet_creator.ids.draw.group == "bet_choice"
+        assert bet_creator.ids.away.group == "bet_choice"
+        assert len(bet_creator.ids) == 9
+        assert bet_creator.ids.input_odd
+        assert bet_creator.ids.input_money
+        assert bet_creator.ids.save
 
-    def check_popup_bet_creation_fail(self):
+    def test_popup_bet_creation_fail(self):
         """
         Check the right error messages are displayed when entries are not properly
         filled
@@ -144,7 +147,7 @@ class TestMatch:
 
     @patch("screens.bet.pages.match.matchpage.Match.quit_popup")
     @patch("screens.bet.pages.match.matchpage.UrlRequest")
-    def check_popup_bet_creation_succeed(self, mock_request, mock_quit):
+    def test_popup_bet_creation_succeed(self, mock_request, mock_quit):
         """
         Check request is send when all entries are filled with expected values
         and that the popup close
