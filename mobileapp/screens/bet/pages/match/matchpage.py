@@ -163,7 +163,8 @@ class BetCreation(Popup):
                 continue
             else:
                 self.ids.error.text = ""
-                selection = widget.text
+                print(selection)
+                selection = self.ids.button_choice.children.index(widget)
                 break
 
         if self.ids.input_money.text.isdigit() and self.ids.input_odd.text.isdigit():
@@ -176,6 +177,6 @@ class BetCreation(Popup):
 
         if self.ids.error.text == "":
             headers = {"Content-Type": "application/json"}
-            params = json.dumps({"bet":money, "odd":odd, "user_id": self.screen.username,
-                                 "match_id": self.id, "team_selected": team_selected})
-            UrlRequest('http://206.189.118.233/bets', req_body=params, req_headers=headers)
+            params = json.dumps({"bet":int(money), "odd":odd, "user_id": self.username,
+                                 "match_id": self.id, "team_selected": selection})
+            UrlRequest('http://206.189.118.233/betexchange', req_body=params, req_headers=headers)
