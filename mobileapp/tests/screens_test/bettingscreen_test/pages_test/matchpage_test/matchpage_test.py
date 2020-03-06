@@ -12,7 +12,7 @@ Builder.load_file('tests/screens_test/bettingscreen_test/pages_test/matchpage_te
 
 class TestMatch:
     """
-    Class checking Match follow the right behavior
+    Class checking Match are correctly created
     """
     player = Mock()
     player.money = 1000
@@ -117,9 +117,49 @@ class TestMatch:
         assert self.object_to_test.ids.title.text == "Groupe F  Tue, 16 Jun 2020 21:00:00 GMT  "
         assert len(self.object_to_test.children) == 3
 
+    def check_popup_bet_creation(self):
+        """
+        Check that the popu contained the expected row and values associated
+        """
+        bet_creator = self.object_to_test.create_bet()
+        assert len(bet_creator.ids.paris) == 3
+        assert bet_creator.ids.odd
+        assert bet_creator.ids.money
+        assert len(bet_creator.ids.bouton) == 2
+
+    def check_popup_bet_creation_fail(self):
+        """
+        Check the right error messages are displayed when entries are not properly
+        filled
+        """
+        bet_creator = self.object_to_test.create_bet()
+        bet_creator.bet()
+        assert bet_creator.ids.error_message.text == "Vous devez remplir tous les champs"
+        bet_creator.ids.odd.text == "Exemple échec car pas un nombre"
+        bet_creator.bet()
+        assert bet_creator.ids.error_message.text == "Vous devez choisir un nombre pour la côte"
+        bet_creator.ids.money.text == "Exemple échec car pas un nombre"
+        bet_creator.bet()
+        assert bet_creator.ids.error_message.text == "Vous devez choisir un nombre pour la somme"
+
+    @patch("screens.bet.pages.match.matchpage.Match.quit_popup")
+    @patch("screens.bet.pages.match.matchpage.UrlRequest")
+    def check_popup_bet_creation_succeed(self, mock_request, mock_quit):
+        """
+        Check request is send when all entries are filled with expected values
+        and that the popup close
+        """
+        bet_creator = self.object_to_test.create_bet()
+        bet_creator.ids.champ[0].selected = 1
+        bet_creator.ids.odd.text == "3"
+        bet_creator.ids.money.text == "700"
+        bet_creator.bet()
+        assert mock_request.called
+        assert mock_quit.called
+
 class TestMatchPage:
     """
-    Class checking MatchPage always follow the expected behavior
+    Class checking MatchPage correctly add the matches and display them
     """
     @patch("screens.bet.pages.match.matchpage.Match.instantiate_match")
     @patch("screens.bet.pages.match.matchpage.MatchPage.add_widget")
