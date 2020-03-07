@@ -163,17 +163,17 @@ def save_user_bet():
     if datetime.now() >=  date_match["date_affrontement"]:
         return jsonify({ "error_message": "Match commencé.Paris indisponible." }), 400
     else:
-
         odd_home = None if team_selected != 1 else odd
         odd_draw = None if team_selected != 2 else odd
         odd_away = None if team_selected != 3 else odd
-        print(team_selected, odd_draw, odd_home, odd_away, user_id, bet, user_id)
         cursor.execute("INSERT INTO rencontre (competition, cote_match_nul, equipe_domicile, cote_domicile, equipe_exterieure, cote_exterieure, sport_id, \
                         diffuseur, region, date_affrontement, date_scraping, bookmaker_id, match_reference, resultat_id, utilisateur_id, mise_maximale)\
                         (SELECT competition, %s, equipe_domicile, %s, equipe_exterieure, %s, sport_id, diffuseur, region, date_affrontement, NULL, bookmaker_id,\
                         match_reference, resultat_id, %s, %s  FROM rencontre WHERE id=%s)",
-                        (odd_draw, odd_home, odd_away, user_id, bet, user_id))
-
+                        (odd_draw, odd_home, odd_away, user_id, bet, match_id))
+        cursor.execute("UPDATE utilisateur SET argent = argent - %s WHERE id=%s",(bet*odd, user_id))
+        connection.commit()
+        return jsonify({ "succes_message": "Pari enregistré", "bet": bet }), 201
 
 @app.route('/<user_id>/bets', methods = ['GET'])
 def get_user_bets(user_id):

@@ -155,28 +155,36 @@ class BetCreation(Popup):
             self.ids.draw.text = draw
 
     def save_bet(self):
-
-        for widget in self.ids.button_choice.children:
-            selection = None
-            if widget.state != "down":
-                self.ids.error.text = "Vous devez choisir un résultat"
-                continue
-            else:
-                self.ids.error.text = ""
-                print(selection)
-                selection = self.ids.button_choice.children.index(widget)
-                break
-
-        if self.ids.input_money.text.isdigit() and self.ids.input_odd.text.isdigit():
-            odd = int(self.ids.input_odd.text)
+        if self.ids.input_money.text.isdigit() and self.ids.input_odd.text:
             money = int(self.ids.input_money.text)
-            if odd*money > self.user_money:
-                self.ids.error.text = "Vous n'avez pas les fonds suffisants"
+            try:
+                odd = float(self.ids.input_odd.text.replace(",","."))
+                if odd*money > self.user_money:
+                    self.ids.error.text = "Vous n'avez pas les fonds suffisants"
+                else:
+                    selection = 1
+                    for widget in reversed(self.ids.button_choice.children):
+                        if widget.state != "down":
+                            self.ids.error.text = "Vous devez choisir un résultat"
+                            selection += 1
+                            continue
+                        else:
+                            self.ids.error.text = ""
+                            headers = {"Content-Type": "application/json"}
+                            params = json.dumps({"bet":int(money), "odd":odd, "user_id": self.username,
+                                        "match_id": self.id, "team_selected": selection})
+                            UrlRequest('http://206.189.118.233/betexchange', on_success=self.dismiss, on_failure=self.failt_to_save,
+                                    req_body=params, req_headers=headers)
+            except ValueError:
+                self.ids.error.text = "Vous devez entrer un nombre entier ou décimal dans côte"
         else:
-            self.ids.error.text = "Vous devez entrer un nombre dans côte et mise"
+            self.ids.error.text = "Vous devez entrer un nombre entier dans mise"
 
-        if self.ids.error.text == "":
-            headers = {"Content-Type": "application/json"}
-            params = json.dumps({"bet":int(money), "odd":odd, "user_id": self.username,
-                                 "match_id": self.id, "team_selected": selection})
-            UrlRequest('http://206.189.118.233/betexchange', req_body=params, req_headers=headers)
+
+
+    def failt_to_save(self):
+        self.dismiss()
+        pop = Popup(title='Invalid Form',
+                    content=Label(text=message),
+                    size_hint=(None, None), size=(250, 250))
+        pop.open()
