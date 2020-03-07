@@ -71,8 +71,9 @@ def competitions(sport_name):
 def rencontre():
     cursor = connection.cursor()
     parameters = request.args.getlist("competition")
-
-    if parameters:
+    if "private" in request.args.getlist()
+        cursor.execute("SELECT * FROM rencontre WHERE utilisateur_id")
+    else:
         cursor.execute("SELECT MAX(date_scraping) FROM rencontre")
         last_scrap = cursor.fetchone()["MAX(date_scraping)"]
         sql = "SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
@@ -87,9 +88,6 @@ def rencontre():
                 sql += "\"" + parameter + "\")"
         sql += " ORDER BY date_affrontement"
         cursor.execute(sql, last_scrap)
-    else:
-        cursor.execute("SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
-                     cote_exterieure,date_affrontement,diffuseur, competition FROM rencontre WHERE utilisateur_id IS NULL ORDER BY date_affrontement")
 
     rows = cursor.fetchall()
     datas = []

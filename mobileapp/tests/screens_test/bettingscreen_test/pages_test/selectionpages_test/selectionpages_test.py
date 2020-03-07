@@ -25,10 +25,11 @@ class TestSportPage:
                       {"nom":"Rugby"}]
         }
         request_mock.return_value = self.object_to_test.parse_json(None, response)
-        assert len(self.object_to_test.data) == 4
+        assert len(self.object_to_test.data) == 5
         assert self.object_to_test.data[0]["text"] == "Football"
-        assert self.object_to_test.data[2]["text"] == "Historique paris"
-        assert self.object_to_test.data[3]["text"] == "Plus gros gagnants"
+        assert self.object_to_test.data[2]["text"] == "Paris privés"
+        assert self.object_to_test.data[3]["text"] == "Historique paris"
+        assert self.object_to_test.data[4]["text"] == "Plus gros gagnants"
 
 class TestRegionPage:
     """
