@@ -159,6 +159,8 @@ class BetCreation(Popup):
             money = int(self.ids.input_money.text)
             try:
                 odd = float(self.ids.input_odd.text.replace(",","."))
+                if 1.0 > odd:
+                    raise ValueError
                 if odd*money > self.user_money:
                     self.ids.error.text = "Vous n'avez pas les fonds suffisants"
                 else:
@@ -173,18 +175,19 @@ class BetCreation(Popup):
                             headers = {"Content-Type": "application/json"}
                             params = json.dumps({"bet":int(money), "odd":odd, "user_id": self.username,
                                         "match_id": self.id, "team_selected": selection})
-                            UrlRequest('http://206.189.118.233/betexchange', on_success=self.dismiss, on_failure=self.failt_to_save,
+                            UrlRequest('http://206.189.118.233/betexchange', on_success=self.dismiss, on_failure=self.fail_to_save,
                                     req_body=params, req_headers=headers)
             except ValueError:
-                self.ids.error.text = "Vous devez entrer un nombre entier ou décimal dans côte"
+                self.ids.error.text = "Vous devez entrer un nombre entier ou décimal supérieur à 1 dans côte"
         else:
-            self.ids.error.text = "Vous devez entrer un nombre entier dans mise"
+            self.ids.error.text = "Vous devez entrer un nombre entier supérieur à 0 dans mise"
 
 
 
-    def failt_to_save(self):
+    def fail_to_save(self, req, result):
         self.dismiss()
         pop = Popup(title='Invalid Form',
-                    content=Label(text=message),
+                    content=Label(text=result["succes_message"]),
                     size_hint=(None, None), size=(250, 250))
         pop.open()
+        return pop

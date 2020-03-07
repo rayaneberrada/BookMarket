@@ -129,36 +129,52 @@ class TestMatch:
         assert bet_creator.ids.input_money
         assert bet_creator.ids.save
 
-    def test_popup_bet_creation_fail(self):
+    @patch("json.dumps")
+    @patch("screens.bet.pages.match.matchpage.UrlRequest")
+    def test_popup_bet_creation_fail(self, mock_request, mock_dump):
         """
         Check the right error messages are displayed when entries are not properly
         filled
         """
         bet_creator = self.object_to_test.create_bet()
+        mock_request.return_value = bet_creator.fail_to_save(None, { "succes_message": "Pari enregistré"})
+        mock_dump.return_value = True
         bet_creator.save_bet()
-        assert bet_creator.ids.error.text == "Vous devez entrer un nombre dans côte et mise"
-        bet_creator.ids.input_odd.text = "5"
+        assert bet_creator.ids.error.text == "Vous devez entrer un nombre entier supérieur à 0 dans mise"
+        bet_creator.ids.input_money.text = "100"
         bet_creator.save_bet()
-        assert bet_creator.ids.error.text == "Vous devez entrer un nombre dans côte et mise"
-        bet_creator.ids.input_money.text = "500"
+        assert bet_creator.ids.error.text == "Vous devez entrer un nombre entier supérieur à 0 dans mise"
+        bet_creator.ids.input_odd.text = "azdadz"
+        bet_creator.save_bet()
+        assert bet_creator.ids.error.text == "Vous devez entrer un nombre entier ou décimal supérieur à 1 dans côte"
+        bet_creator.ids.input_odd.text = "0.5"
+        assert bet_creator.ids.error.text == "Vous devez entrer un nombre entier ou décimal supérieur à 1 dans côte"
+        bet_creator.ids.input_odd.text = "100"
         bet_creator.save_bet()
         assert bet_creator.ids.error.text == "Vous n'avez pas les fonds suffisants"
-        bet_creator.ids.input_money.text = "5"
+        bet_creator.ids.input_odd.text = "2"
         bet_creator.save_bet()
         assert bet_creator.ids.error.text == "Vous devez choisir un résultat"
+        bet_creator.ids.button_choice.children[0].state = "down"
+        bet_creator.save_bet()
+        assert mock_request.called
+        assert mock_request.return_value.content.text == "Pari enregistré"
 
-    @patch("screens.bet.pages.match.matchpage.Match.quit_popup")
+    @patch("json.dumps")
+    @patch("screens.bet.pages.match.matchpage.BetCreation.dismiss")
     @patch("screens.bet.pages.match.matchpage.UrlRequest")
-    def test_popup_bet_creation_succeed(self, mock_request, mock_quit):
+    def test_popup_bet_creation_succeed(self, mock_request, mock_quit, mock_dump):
         """
         Check request is send when all entries are filled with expected values
         and that the popup close
         """
         bet_creator = self.object_to_test.create_bet()
-        bet_creator.ids.champ[0].selected = 1
-        bet_creator.ids.odd.text == "3"
-        bet_creator.ids.money.text == "700"
-        bet_creator.bet()
+        mock_request.return_value = bet_creator.dismiss()
+        bet_creator.ids.button_choice.children[0].state = "down"
+        bet_creator.ids.input_odd.text = "3"
+        bet_creator.ids.input_money.text = "50"
+        bet_creator.save_bet()
+        print(bet_creator.ids.error.text)
         assert mock_request.called
         assert mock_quit.called
 
