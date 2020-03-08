@@ -1,2 +1,34 @@
+<PrivateBetPage>:
+    cols: 1
+    size_hint_y: None
+    spacing: 10
 
+<PrivateMatch>:
+    size_hint_y: None
+    cols: 1
+    BackgroundLabel:
+        id: title
+        background_color: 0.185, 0.202, 0.235, 1
 
+    BackgroundLabel:
+        background_color: 0.185, 0.202, 0.235, 1
+        id: match
+
+    BackgroundLabel:
+        background_color: 0.185, 0.202, 0.235, 1
+        id: bet
+
+    GridLayout:
+        cols: 2
+        BackgroundLabel:
+            size_hint_x: None
+            width: root.width/4
+            background_color: 0.185, 0.202, 0.235, 1
+            id: mise
+
+        TextInput:
+            id: input
+            text: ""
+
+    Button:
+        text: "Parier"

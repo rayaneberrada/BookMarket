@@ -71,7 +71,7 @@ def competitions(sport_name):
 def rencontre():
     cursor = connection.cursor()
     parameters = request.args.getlist("competition")
-    if "private" in request.args.getlist()
+    if parameters[0] == "private":
         cursor.execute("SELECT * FROM rencontre WHERE utilisateur_id")
     else:
         cursor.execute("SELECT MAX(date_scraping) FROM rencontre")
@@ -93,9 +93,8 @@ def rencontre():
     datas = []
     for row in rows:
         datas.append({"cote_nul" : str(row["cote_match_nul"]),"domicile" : row["equipe_domicile"], "cote_dom" :str(row["cote_domicile"]),\
-                    "exterieur" : row["equipe_exterieure"], "cote_ext" : str(row["cote_exterieure"]), "date" : row["date_affrontement"],\
-                    "tv" : row["diffuseur"], "id": str(row["id"]), "competition": row["competition"]})
-        #Voir si on garde les cotes au format string car jsonify n'accepte pas les decimal
+                    "exterieur" : row["equipe_exterieure"], "cote_ext" : str(row["cote_exterieure"]), "date" : row["date_affrontement"], "mise": row["mise_maximale"],\
+                    "tv" : row["diffuseur"], "id": str(row["id"]), "competition": row["competition"], "region": row["region"], "sport": row["sport_id"]})
     return jsonify(matches=datas)
 
 @app.route('/users', methods = ['POST'])

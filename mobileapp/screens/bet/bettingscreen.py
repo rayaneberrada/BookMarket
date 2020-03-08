@@ -7,6 +7,7 @@ from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 
+from  screens.bet.pages.betduel.betduel_page import PrivateBetPage
 from  screens.bet.pages.bestplayers.bestplayerspage import BestPlayerPage
 from  screens.bet.pages.bet.betpage import BetPage
 from  screens.bet.pages.match.matchpage import MatchPage
@@ -122,7 +123,11 @@ class BettingScreen(Screen):
         Create the page containing all the bets created by user.
         Anyone can then bet on any of those bets.
         """
-        pass
+        self.ids.pages.remove_widget(self.pages[0])
+        self.pages.append(PrivateBetPage(self.screenmanager))
+        self.ids.pages.add_widget(self.pages[1])
+        self.ids.bottom.add_widget(self.backward)
+        self.current_page = 9
 
     def update_view(self, page_to_add):
         """
