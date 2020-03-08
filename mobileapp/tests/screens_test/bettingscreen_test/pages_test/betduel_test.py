@@ -45,11 +45,14 @@ class TestBetDuelPage:
         self.object_to_test.children[0].ids.input_amount = "1000000"
         assert self.object_to_test.children[0].bet().content.text == "Argent insuffisant"
 
+    @patch("json.dumps")
     @patch("screens.bet.pages.betduel.betduel_page.UrlRequest")
-    def test_bet_succeed(self, mock_request):
+    def test_bet_succeed(self, mock_request, mock_parameters):
         """
         Function checking the function posting the bet is called when the user put
         the right informations
         """
+        mock_parameters.return_value = True
+        self.object_to_test.children[0].ids.input_amount = "100"
         self.object_to_test.children[0].bet()
         assert mock_request.called
