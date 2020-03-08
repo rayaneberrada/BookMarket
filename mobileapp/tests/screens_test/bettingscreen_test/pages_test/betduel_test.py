@@ -33,23 +33,23 @@ class TestBetDuelPage:
         assert self.object_to_test.children[0].ids.bet.text  == "1.20 Écosse"
         assert self.object_to_test.children[0].ids.mise.text == "mise maximale: 100"
 
+    def test_bet_fail(self):
+        """
+        Function checking the right error messages are displayed if the user doesn't
+        put the right informations
+        """
+        self.object_to_test.children[0].ids.input_amount = ""
+        assert self.object_to_test.children[0].bet().content.text == "Champ vide"
+        self.object_to_test.children[0].ids.input_amount = "Not a number"
+        assert self.object_to_test.children[0].bet().content.text == "La mise doit être un entier non nul"
+        self.object_to_test.children[0].ids.input_amount = "1000000"
+        assert self.object_to_test.children[0].bet().content.text == "Argent insuffisant"
+
     @patch("screens.bet.pages.betduel.betduel_page.UrlRequest")
     def test_bet_succeed(self, mock_request):
         """
         Function checking the function posting the bet is called when the user put
         the right informations
         """
-        object_to_test.children[0].bet()
+        self.object_to_test.children[0].bet()
         assert mock_request.called
-
-    def test_bet_fail(self):
-        """
-        Function checking the right error messages are displayed if the user doesn't
-        put the right informations
-        """
-        object_to_test.children[0].odd = ""
-        assert object_to_test.children[0].bet() == "cote absente"
-        object_to_test.children[0].odd = "2.0"
-        object_to_test.children[0].mise = "1000000"
-        assert object_to_test.children[0].bet() == "mise trop élevée"
-
