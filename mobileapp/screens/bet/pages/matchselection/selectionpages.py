@@ -35,10 +35,11 @@ class SportPage(RecycleView):
         to request all the bets done by the user since the profile exist and the best players
         of the app.
         """
+        print("yes")
         self.data = []
         for value in result["sports"]:
             self.data.append({"text" : value['nom'], "name" : value["nom"],
-                              "on_press" : functools.partial(self.next_view, value['nom'])})
+                              "on_press" : functools.partial(self.next_view, value['id'])})
         self.data.append({"text" : "Paris privés", "name" : "privés",
                           "on_press" : functools.partial(self.private_view)})
         self.data.append({"text" : "Historique paris", "name" : "historique",
@@ -51,12 +52,12 @@ class RegionPage(RecycleView):
     Class managing the display of the regions available to search for a sport and the request
     of the leagues related to the regions selected by the user
     """
-    def __init__(self, screen, sport, **kwargs):
+    def __init__(self, player, sport, **kwargs):
         super(RegionPage, self).__init__(**kwargs)
         self.data = []
-        self.screen = screen
+        self.player = player
         self.args = ""
-        UrlRequest('http://206.189.118.233/rencontres/{}/regions'.format(sport),
+        UrlRequest('http://206.189.118.233/{}/regions?matches_available=True'.format(sport),
                    self.parse_json)
 
     def parse_json(self, req, result):
@@ -72,12 +73,12 @@ class LeaguePage(RecycleView):
     Class managing the display of the leagues related to the regions chosen by the user, and the
     search and display of availables matches and bets related to the leagues selected by the user
     """
-    def __init__(self, screen, request_args, **kwargs):
+    def __init__(self, player, request_args, **kwargs):
         super(LeaguePage, self).__init__(**kwargs)
         self.data = []
-        self.screen = screen
+        self.player = player
         self.args = ""
-        UrlRequest("http://206.189.118.233/rencontres/{}/competitions?".format(self.screen.sport_chosen) + request_args,
+        UrlRequest("http://206.189.118.233/{}/competitions?".format(self.player.sport_chosen) + request_args,
                    self.parse_json)
 
     def parse_json(self, req, result):

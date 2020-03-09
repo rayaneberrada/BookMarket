@@ -13,21 +13,21 @@ class MatchPage(GridLayout):
     """
     Class managing and containing the matcheds requested by the user
     """
-    def __init__(self, screen, **kwargs):
+    def __init__(self, player, **kwargs):
         super(MatchPage, self).__init__(**kwargs)
-        self.league_args = screen.pages[2].args
-        self.screen = screen
+        self.league_args = player.pages[2].args
+        self.player = player
         self.bind(minimum_height=self.setter('height'))
-        UrlRequest('http://206.189.118.233/rencontres?' + self.league_args, self.add_to_view)
+        UrlRequest('http://206.189.118.233/{}/rencontres?'.format(self.player.sport_chosen) + self.league_args, self.add_to_view)
 
 
     def add_to_view(self, req, result):
         """
         Instantiate a Match for each match contained in the response sent back by the UrlRequest
-        and add it to the grid of MatchPage to be displayed on our screen view
+        and add it to the grid of MatchPage to be displayed on our player view
         """
         for value in result["matches"]:
-            match = Match(self.screen)
+            match = Match(self.player)
             match.instantiate_match(value)
             self.add_widget(match)
 
@@ -35,9 +35,9 @@ class Match(GridLayout):
     """
     Class building and managinf  functionnalities related to the matches
     """
-    def __init__(self, screen, **kwargs):
+    def __init__(self, player, **kwargs):
         super(Match, self).__init__(**kwargs)
-        self.screen = screen
+        self.player = player
 
     def bet(self, button_text):
         """
@@ -60,11 +60,11 @@ class Match(GridLayout):
         if input_amount:
             if input_amount.isdigit():
                 input_amount = int(input_amount)
-                if self.screen.money >= input_amount:
+                if self.player.money >= input_amount:
                     headers = {"Content-Type": "application/json"}
-                    params = json.dumps({"bet": input_amount, "odd":odd, "user_id": self.screen.username,
-                                         "match_id": self.id, "team_selected": team_selected})
-                    UrlRequest('http://206.189.118.233/bets', on_success=self.update_player,
+                    params = json.dumps({"bet": input_amount, "odd":odd, "user_id": self.player.username,
+                                         "match_id": self.id, "team_selected": team_selected, "private": False})
+                    UrlRequest('http://206.189.118.233/bet', on_success=self.update_player,
                                on_failure=self.out_of_date, req_body=params, req_headers=headers)
                 else:
                     return self.pop_message("Argent insuffisant")
@@ -92,8 +92,8 @@ class Match(GridLayout):
         Update the amount available to the player if the bet has been accepted
         """
         if "succes_message" in result:
-            self.screen.money -= result["bet"]
-            self.screen.update_money()
+            self.player.money -= result["bet"]
+            self.player.update_money()
             self.pop_message(result["succes_message"])
 
     def out_of_date(self, req, result):
@@ -125,11 +125,12 @@ class Match(GridLayout):
         Instantiate the popup widget with the informations of the bet the player want
         to use as a model
         """
-        bet_interface = BetCreation(self.screen.username, self.screen.money, self.id, self.ids.bet_home.text,
-                                    self.ids.bet_draw.text, self.ids.bet_away.text)
+        bet_interface = BetCreation(self.player.username, self.player.money, self.id, self.ids.bet_home.text,
+                                    self.ids.bet_draw.text, self.ids.bet_away.text, self.update_player)
         bet_interface.id = self.id
         bet_interface.ids.home.text = self.ids.bet_home.text
-        bet_interface.ids.draw.text = self.ids.bet_draw.text
+        if "bet_draw" in bet_interface.ids:
+            bet_interface.ids.draw.text = self.ids.bet_draw.text
         bet_interface.ids.away.text = self.ids.bet_away.text
         bet_interface.height = self.height * 4
         bet_interface.width = self.width
@@ -141,15 +142,15 @@ class BetCreation(Popup):
     Create a popup that the player can use to create a bet that other players will
     be able to bet against
     """
-    def __init__(self, username, money, bet_id, home, draw, away, **kwargs):
+    def __init__(self, username, money, bet_id, home, draw, away, update_funct, **kwargs):
         super(BetCreation, self).__init__(**kwargs)
         self.username = username
         self.user_money = money
         self.bet_id = bet_id
         self.ids.home.text = home
         self.ids.away.text = away
+        self.update_funct = update_funct
         if "None" in draw:
-            print("yes")
             self.ids.button_choice.remove_widget(self.ids.draw)
         else:
             self.ids.draw.text = draw
@@ -167,7 +168,6 @@ class BetCreation(Popup):
                     selection = 1
                     for widget in reversed(self.ids.button_choice.children):
                         if widget.state != "down":
-                            self.ids.error.text = "Vous devez choisir un résultat"
                             selection += 1
                             continue
                         else:
@@ -175,14 +175,17 @@ class BetCreation(Popup):
                             headers = {"Content-Type": "application/json"}
                             params = json.dumps({"bet":int(money), "odd":odd, "user_id": self.username,
                                         "match_id": self.id, "team_selected": selection})
-                            UrlRequest('http://206.189.118.233/betexchange', on_success=self.dismiss, on_failure=self.fail_to_save,
+                            return UrlRequest('http://206.189.118.233/betexchange', on_success=self.update_player, on_failure=self.fail_to_save,
                                     req_body=params, req_headers=headers)
+                    self.ids.error.text = "Vous devez choisir un résultat"
             except ValueError:
                 self.ids.error.text = "Vous devez entrer un nombre entier ou décimal supérieur à 1 dans côte"
         else:
             self.ids.error.text = "Vous devez entrer un nombre entier supérieur à 0 dans mise"
 
-
+    def update_player(self, req, result):
+        self.dismiss()
+        self.update_funct(req, result)
 
     def fail_to_save(self, req, result):
         self.dismiss()

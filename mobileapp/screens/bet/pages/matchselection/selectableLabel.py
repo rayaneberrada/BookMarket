@@ -34,7 +34,7 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
     def apply_selection(self, rv, index, is_selected):
         ''' Respond to the selection of items in the view. '''
         self.selected = is_selected
-        if rv.screen.current_page == 2:
+        if rv.player.current_page == 2:
             arg_to_add = "region=" + urllib.parse.quote(rv.data[index]["text"])
             if is_selected and arg_to_add not in rv.args:
                 rv.args += arg_to_add + "&"
@@ -47,7 +47,7 @@ class SelectableLabel(RecycleDataViewBehavior, Label):
                     if arg_to_add == arg:
                         args.remove(arg)
                 rv.args = "&".join(args)
-        elif rv.screen.current_page == 3:
+        elif rv.player.current_page == 3:
             arg_to_add = "competition=" + urllib.parse.quote(rv.data[index]["text"])
             if is_selected and arg_to_add not in rv.args:
                 rv.args += arg_to_add + "&"

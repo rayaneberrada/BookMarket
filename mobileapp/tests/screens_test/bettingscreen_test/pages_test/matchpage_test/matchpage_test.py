@@ -36,7 +36,7 @@ class TestMatch:
         self.object_to_test.ids.bet_home.text = "2.35"
         self.object_to_test.bet("Domicile")
         assert request_mock.called
-        assert self.object_to_test.screen.money == 990
+        assert self.object_to_test.player.money == 990
 
     @patch("json.dumps")
     @patch("screens.bet.pages.match.matchpage.UrlRequest")
@@ -193,7 +193,7 @@ class TestMatchPage:
         player = Mock()
         player.money = 1000
         player.user = "fake_user"
-        MatchPage.screen = player
+        MatchPage.player = player
         MatchPage.add_to_view(MatchPage, None, {"matches":"fake_value"})
         assert mock_add_widget.called
         assert mock_match_instantiation.called

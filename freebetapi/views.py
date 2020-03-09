@@ -12,6 +12,7 @@ connection = pymysql.connect(host='localhost',
                      db='BookMarket',
                      charset='utf8mb4',
                      cursorclass=pymysql.cursors.DictCursor)
+cursor = connection.cursor()
 
 @app.route('/sports', methods=['GET'])
 def sports():
@@ -19,35 +20,42 @@ def sports():
     When appurl/sports is requested, all the sports of the Database or sent in a jsonformat containing
     the name of the sport and the associated id
     """
-    cursor = connection.cursor()
     cursor.execute("SELECT nom, id FROM sport")
     rows = cursor.fetchall()
     return jsonify(sports=rows)
 
-@app.route('/rencontres/<sport_name>/regions', methods=['GET'])
-def regions(sport_name):
+@app.route('/<sport_id>/regions', methods=['GET'])
+def regions(sport_id):
     """
-    When appurl/rencontres/<int:sport_id>/regions is requested, depending of the number used in sport_id
+    When appurl/<int:sport_id>/regions is requested, depending of the number used in sport_id
     parameter, the regions names related to the sport which match this id will be sent in a json format
     """
-    parameters = request.args
-    cursor = connection.cursor()
-    cursor.execute("SELECT id FROM sport WHERE nom=%s", sport_name)
-    sport_id = cursor.fetchone()["id"]
-    print(sport_name,sport_id)
-    cursor.execute("SELECT DISTINCT region FROM rencontre WHERE sport_id=%s", sport_id)
+    if "matches_available" in request.args:
+        parameters = bool(request.args["matches_available"])
+    else:
+        parameters = None
+    #Check if the user wants to return regions that have bets available or every single region
+
+    if parameters == True:
+        cursor.execute("SELECT DISTINCT region FROM rencontre WHERE sport_id=%s AND CURRENT_TIMESTAMP() <= date_affrontement", sport_id)
+    else:
+        if sport_id == 0:
+            cursor.execute("SELECT DISTINCT region FROM rencontre")
+        else:
+            cursor.execute("SELECT DISTINCT region FROM rencontre WHERE sport_id=%s", sport_id)
     rows = cursor.fetchall()
     datas = []
     for row in rows:
         datas.append(row["region"])
     return jsonify(regions=datas)
 
-@app.route('/rencontres/<sport_name>/competitions', methods=['GET'])
-def competitions(sport_name):
-    cursor = connection.cursor()
+@app.route('/<sport_id>/competitions', methods=['GET'])
+def competitions(sport_id):
+    """
+    When appurl/<int:sport_id>/competitions is called , it returns competitions related to the regions used as parameters.
+    If no region in parameters, return all competitions if sport_id set to 0, or competitions related to the sport_id selected if exist.
+    """
     parameters = request.args.getlist("region")
-    cursor.execute("SELECT id FROM sport WHERE nom=%s", sport_name)
-    sport_id = cursor.fetchone()["id"]
 
     if parameters:
         sql = "SELECT DISTINCT competition FROM rencontre WHERE sport_id=%s AND region IN ("
@@ -58,7 +66,11 @@ def competitions(sport_name):
                 sql += "\"" + parameter + "\")"
         cursor.execute(sql, sport_id)
     else:
-        cursor.execute("SELECT DISTINCT competition FROM rencontre")
+        if sport_id == 0:
+            cursor.execute("SELECT DISTINCT competition FROM rencontre")
+        else:
+            cursor.execute("SELECT DISTINCT competition FROM rencontre WHERE sport_id=%s", (sport_id))
+    #If the url is requested with region arguments return the competitions of those regions, otherwise return all the competitions for a sport
 
     rows = cursor.fetchall()
     datas = []
@@ -67,39 +79,58 @@ def competitions(sport_name):
     return jsonify(competitions=datas)
 
 
-@app.route('/rencontres', methods=['GET'])
-def rencontre():
-    cursor = connection.cursor()
+@app.route('/<int:sport_id>/rencontres', methods=['GET'])
+def rencontre(sport_id):
+    """
+    When appurl/<int:sport_id>/rencontres is called, returns matches related to the competitions used as parameters.
+    If no competition in parameters, return all matches if sport_id set to 0, or matches related to the sport_id selected if exist.
+    """
     parameters = request.args.getlist("competition")
-    if parameters[0] == "private":
-        cursor.execute("SELECT * FROM rencontre WHERE utilisateur_id")
+    #Return matches for the selected comeptitions
+    private = bool(request.args.getlist("private"))
+    #If private is set to True in the url argument private, return bet that have been created by users, otherwise return matches scraped from Winamax
+    if private == True:
+        cursor.execute("SELECT * FROM rencontre WHERE utilisateur_id AND CURRENT_TIMESTAMP() <= date_affrontement ORDER BY date_affrontement")
     else:
-        cursor.execute("SELECT MAX(date_scraping) FROM rencontre")
-        last_scrap = cursor.fetchone()["MAX(date_scraping)"]
-        sql = "SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
-                     cote_exterieure,date_affrontement,diffuseur,competition FROM rencontre WHERE date_scraping=%s\
-                     AND utilisateur_id IS NULL\
-                     AND CURDATE() <= date_affrontement \
-                     AND competition IN ("
-        for parameter in parameters:
-            if parameter != parameters[-1]:
-                sql += "\"" + parameter + "\","
+        if parameters:
+            cursor.execute("SELECT MAX(date_scraping) FROM rencontre")
+            last_scrap = cursor.fetchone()["MAX(date_scraping)"]
+            sql = "SELECT * FROM rencontre WHERE date_scraping=%s\
+                        AND utilisateur_id IS NULL\
+                        AND sport_id = %s\
+                        AND CURRENT_TIMESTAMP() <= date_affrontement \
+                        AND competition IN ("
+            for parameter in parameters:
+                if parameter != parameters[-1]:
+                    sql += "\"" + parameter + "\","
+                else:
+                    sql += "\"" + parameter + "\")"
+            sql += " ORDER BY date_affrontement"
+            cursor.execute(sql, (last_scrap, sport_id))
+            """
+            This sql select matches from the last scrap that haven't been created by any user, haven't been played yet and are contained in
+            the competitions defined in the url arguments
+            """
+        else:
+            if sport_id == 0:
+                cursor.execute("SELECT * FROM rencontre")
             else:
-                sql += "\"" + parameter + "\")"
-        sql += " ORDER BY date_affrontement"
-        cursor.execute(sql, last_scrap)
+                cursor.execute("SELECT * FROM rencontre WHERE sport_id=%s", (sport_id))
+
 
     rows = cursor.fetchall()
     datas = []
     for row in rows:
-        datas.append({"cote_nul" : str(row["cote_match_nul"]),"domicile" : row["equipe_domicile"], "cote_dom" :str(row["cote_domicile"]),\
-                    "exterieur" : row["equipe_exterieure"], "cote_ext" : str(row["cote_exterieure"]), "date" : row["date_affrontement"], "mise": row["mise_maximale"],\
-                    "tv" : row["diffuseur"], "id": str(row["id"]), "competition": row["competition"], "region": row["region"], "sport": row["sport_id"]})
-    return jsonify(matches=datas)
+        datas.append({"id": str(row["id"]),"id_match":row["match_reference"], "sport": row["sport_id"], "region": row["region"], "competition": row["competition"],"date" : row["date_affrontement"],\
+                      "cote_nul" : str(row["cote_match_nul"]),"domicile" : row["equipe_domicile"], "cote_dom" :str(row["cote_domicile"]), "exterieur" : row["equipe_exterieure"], "cote_ext" : str(row["cote_exterieure"]), \
+                      "date_scraping": row["date_scraping"],"resultat_id": row["resultat_id"],"utilisateur_id":row["utilisateur_id"], "mise": row["mise_maximale"], "tv" : row["diffuseur"]})
+    return jsonify(matches=datas, amount=len(rows))
 
-@app.route('/users', methods = ['POST'])
-def new_user():
-    cursor = connection.cursor()
+@app.route('/register', methods = ['POST'])
+def create_new_user():
+    """
+    Check if the user exist before creating a new if he doesn't
+    """
     username = request.json.get('username')
     password = request.json.get('password')
 
@@ -114,7 +145,9 @@ def new_user():
 
 @app.route('/login', methods = ['POST'])
 def login():
-    cursor = connection.cursor()
+    """
+    Check the user already exist and send back to the app the necessary informations so the user can use the kivy app
+    """
     username = request.json.get('username')
     password = request.json.get('password')
 
@@ -128,28 +161,34 @@ def login():
     else:
         return jsonify({ "error_message": "Cet utilisateur n'existe pas" }), 400
 
-@app.route('/bets', methods = ['POST'])
+@app.route('/bet', methods = ['POST'])
 def bet():
-    cursor = connection.cursor()
+    """
+    If the match hasn't begin yet, save the bet made by the user in database
+    """
     match_id = request.json.get("match_id")
     user_id = request.json.get("user_id")
     team_selected = request.json.get("team_selected")
     odd = float(request.json.get("odd"))
     bet = request.json.get("bet")
+    private = request.json.get("private")
     cursor.execute("SELECT date_affrontement  FROM rencontre WHERE id=%s", match_id)
     date_match = cursor.fetchone()
     if datetime.now() >=  date_match["date_affrontement"]:
         return jsonify({ "error_message": "Match commencé.Paris indisponible." }), 400
     else:
+        if private:
+            cursor.execute("UPDATE rencontre SET mise_maximale = mise_maximale - %s WHERE id=%s",(bet, match_id))
         cursor.execute("INSERT INTO paris (rencontre_id, utilisateur_id, mise, equipe_pariee, cote) VALUES (%s, %s, %s, %s, %s)", (match_id, user_id, bet, team_selected, odd))
         cursor.execute("UPDATE utilisateur SET argent = argent - %s WHERE id=%s",(bet, user_id))
         connection.commit()
         return jsonify({ "succes_message": "Pari enregistré", "bet": bet }), 201
-    #Vérifier qu'une cote existe
 
 @app.route('/betexchange', methods = ['POST'])
 def save_user_bet():
-    cursor = connection.cursor()
+    """
+    If the match hasn't begin yet, save the match created by the user.This match can then be bet on by other user.
+    """
     match_id = request.json.get("match_id")
     user_id = request.json.get("user_id")
     team_selected = request.json.get("team_selected")
@@ -174,7 +213,9 @@ def save_user_bet():
 
 @app.route('/<user_id>/bets', methods = ['GET'])
 def get_user_bets(user_id):
-    cursor = connection.cursor()
+    """
+    Return bets made by a user depending of his id
+    """
     cursor.execute("SELECT * FROM paris WHERE utilisateur_id=%s ORDER BY date_enregistrement DESC", user_id)
     bets = cursor.fetchall()
     for bet in bets:
@@ -186,7 +227,9 @@ def get_user_bets(user_id):
 
 @app.route('/winners', methods = ['GET'])
 def user_bets():
-    cursor = connection.cursor()
+    """
+    Request the three players who have won the most money.
+    """
     cursor.execute("SELECT nom, argent FROM utilisateur ORDER BY argent DESC LIMIT 3")
     winners = cursor.fetchall()
     return jsonify(winners=winners)

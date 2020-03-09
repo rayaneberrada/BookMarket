@@ -30,7 +30,7 @@ class TestBetDuelPage:
         assert len(self.object_to_test.children[0].ids) == 5
         assert self.object_to_test.children[0].ids.title.text == "Tournoi des 6 Nations  2020-03-08 16:00:00  FRANCE2"
         assert self.object_to_test.children[0].ids.match.text == "Écosse contre France"
-        assert self.object_to_test.children[0].ids.bet.text  == "1.20 Écosse"
+        assert self.object_to_test.children[0].ids.bet.text  == "1.20 France"
         assert self.object_to_test.children[0].ids.mise.text == "mise maximale: 100"
 
     def test_bet_fail(self):
@@ -38,11 +38,11 @@ class TestBetDuelPage:
         Function checking the right error messages are displayed if the user doesn't
         put the right informations
         """
-        self.object_to_test.children[0].ids.input_amount = ""
+        self.object_to_test.children[0].ids.input_amount.text = ""
         assert self.object_to_test.children[0].bet().content.text == "Champ vide"
-        self.object_to_test.children[0].ids.input_amount = "Not a number"
+        self.object_to_test.children[0].ids.input_amount.text = "Not a number"
         assert self.object_to_test.children[0].bet().content.text == "La mise doit être un entier non nul"
-        self.object_to_test.children[0].ids.input_amount = "1000000"
+        self.object_to_test.children[0].ids.input_amount.text = "1000000"
         assert self.object_to_test.children[0].bet().content.text == "Argent insuffisant"
 
     @patch("json.dumps")
@@ -53,6 +53,6 @@ class TestBetDuelPage:
         the right informations
         """
         mock_parameters.return_value = True
-        self.object_to_test.children[0].ids.input_amount = "100"
+        self.object_to_test.children[0].ids.input_amount.text = "10"
         self.object_to_test.children[0].bet()
         assert mock_request.called

@@ -32,7 +32,7 @@ class BettingScreen(Screen):
         ###User infos###
         self.username = user
         self.money = money
-        self.sport_chosen = ""
+        self.sport_chosen = None
 
         self.create_view(None)
 
@@ -124,7 +124,7 @@ class BettingScreen(Screen):
         Anyone can then bet on any of those bets.
         """
         self.ids.pages.remove_widget(self.pages[0])
-        self.pages.append(PrivateBetPage(self.screenmanager))
+        self.pages.append(PrivateBetPage(self))
         self.ids.pages.add_widget(self.pages[1])
         self.ids.bottom.add_widget(self.backward)
         self.current_page = 9

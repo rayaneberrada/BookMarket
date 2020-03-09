@@ -21,8 +21,8 @@ class TestSportPage:
         the expected way
         """
         response = {
-            "sports":[{"nom":"Football"},
-                      {"nom":"Rugby"}]
+            "sports":[{"nom":"Football", "id":1},
+                      {"nom":"Rugby", "id":2}]
         }
         request_mock.return_value = self.object_to_test.parse_json(None, response)
         assert len(self.object_to_test.data) == 5

@@ -30,7 +30,7 @@ class RegisterScreen(Screen):
         else:
             params = json.dumps({"username": username, "password": password})
             headers = {"Content-Type": "application/json"}
-            req = UrlRequest('http://206.189.118.233/users', on_success=self.display_message,
+            req = UrlRequest('http://206.189.118.233/register', on_success=self.display_message,
                        on_failure=self.display_message,on_error=self.display_message, req_body=params, req_headers=headers)
 
     def display_message(self, req, result):
@@ -45,7 +45,7 @@ class RegisterScreen(Screen):
         elif "error_message" in result:
             return self.popup_message(result["error_message"])
         else:
-            return self.popup_message("Ca marche pas merde")
+            return self.popup_message("Connexion avec le serveur impossible")
 
     def popup_message(self, message):
         """
