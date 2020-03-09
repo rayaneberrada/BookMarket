@@ -7,6 +7,7 @@ from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 
+from  screens.bet.pages.betduel.betduel_page import PrivateBetPage
 from  screens.bet.pages.bestplayers.bestplayerspage import BestPlayerPage
 from  screens.bet.pages.bet.betpage import BetPage
 from  screens.bet.pages.match.matchpage import MatchPage
@@ -41,11 +42,13 @@ class BettingScreen(Screen):
         to display the related functionnality
         """
         self.sport_chosen = choice if choice else self.sport_chosen
+        #If user doesn't change first chocie sport, sport chosen stay the same
         page = {
             0: self.create_sport_page,
             1: self.create_region_page,
             2: self.create_league_page,
-            3: self.create_match_page
+            3: self.create_match_page,
+            4: self.create_private_bets_page
         }.get(self.current_page)()
 
     def create_sport_page(self):
@@ -111,6 +114,17 @@ class BettingScreen(Screen):
         """
         self.ids.pages.remove_widget(self.pages[0])
         self.pages.append(BestPlayerPage())
+        self.ids.pages.add_widget(self.pages[1])
+        self.ids.bottom.add_widget(self.backward)
+        self.current_page = 9
+
+    def create_private_bets_page(self):
+        """
+        Create the page containing all the bets created by user.
+        Anyone can then bet on any of those bets.
+        """
+        self.ids.pages.remove_widget(self.pages[0])
+        self.pages.append(PrivateBetPage(self.screenmanager))
         self.ids.pages.add_widget(self.pages[1])
         self.ids.bottom.add_widget(self.backward)
         self.current_page = 9

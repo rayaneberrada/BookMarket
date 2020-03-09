@@ -18,6 +18,7 @@ class SportPage(RecycleView):
         super(SportPage, self).__init__(**kwargs)
         self.data = []
         self.next_view = view_manager.create_view
+        self.private_view = view_manager.create_private_bets_page
         self.bets_view = view_manager.create_bets_page
         self.winners_view = view_manager.create_winners_page
         self.request_json()
@@ -38,6 +39,8 @@ class SportPage(RecycleView):
         for value in result["sports"]:
             self.data.append({"text" : value['nom'], "name" : value["nom"],
                               "on_press" : functools.partial(self.next_view, value['nom'])})
+        self.data.append({"text" : "Paris privés", "name" : "privés",
+                          "on_press" : functools.partial(self.private_view)})
         self.data.append({"text" : "Historique paris", "name" : "historique",
                           "on_press" : functools.partial(self.bets_view)})
         self.data.append({"text" : "Plus gros gagnants", "name" : "gagnants",
