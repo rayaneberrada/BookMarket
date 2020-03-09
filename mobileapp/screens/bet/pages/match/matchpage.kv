@@ -1,3 +1,51 @@
+<BetCreation>:
+    title: "Créez votre propre pari et défiez d'autres joueurs"
+    size_hint: None, None
+
+    GridLayout:
+        cols: 1
+        GridLayout:
+            cols: 3
+            size_hint_y: None
+            height: root.height / 3
+            id: button_choice
+            ToggleButton:
+                id: home
+                group: "bet_choice"
+            ToggleButton:
+                id: draw
+                group: "bet_choice"
+            ToggleButton:
+                id: away
+                group: "bet_choice"
+        GridLayout:
+            size_hint_y: None
+            height: root.height / 9
+            cols: 2
+            Label:
+                text: "Côte"
+            TextInput:
+                id: input_odd
+        GridLayout:
+            size_hint_y: None
+            height: root.height / 9
+            cols: 2
+            Label:
+                text: "Mise"
+            TextInput:
+                id: input_money
+        Label:
+            id: error
+            size_hint_y: None
+            height: root.height / 9
+        Button:
+            id: save
+            size_hint_y: None
+            height: root.height / 7
+            text: "Créer"
+            on_release: root.save_bet()
+
+
 <MatchPage>:
     cols: 1
     size_hint_y: None
@@ -5,7 +53,6 @@
 
 <Match>:
     size_hint_y: None
-    height: 120
     cols: 1
     BackgroundLabel:
         id: title
@@ -52,3 +99,7 @@
             id: submit_away
             text: "Extérieur"
             on_press: root.bet(self.text)
+
+    Button:
+        text: "Créez votre pari"
+        on_release: root.create_bet()

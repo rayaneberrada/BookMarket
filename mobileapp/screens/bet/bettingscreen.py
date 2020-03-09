@@ -171,4 +171,5 @@ class BettingScreen(Screen):
         """
         Leave the betting screen to go on the login one
         """
+        self.screenmanager.display.screens.pop()
         self.screenmanager.display.current = "login"

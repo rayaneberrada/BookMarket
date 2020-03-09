@@ -65,7 +65,7 @@ def competitions(sport_name):
     for row in rows:
         datas.append(row["competition"])
     return jsonify(competitions=datas)
-    
+
 
 @app.route('/rencontres', methods=['GET'])
 def rencontre():
@@ -77,6 +77,7 @@ def rencontre():
         last_scrap = cursor.fetchone()["MAX(date_scraping)"]
         sql = "SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
                      cote_exterieure,date_affrontement,diffuseur,competition FROM rencontre WHERE date_scraping=%s\
+                     AND utilisateur_id IS NULL\
                      AND CURDATE() <= date_affrontement \
                      AND competition IN ("
         for parameter in parameters:
@@ -88,7 +89,7 @@ def rencontre():
         cursor.execute(sql, last_scrap)
     else:
         cursor.execute("SELECT id, cote_match_nul, equipe_domicile,cote_domicile, equipe_exterieure,\
-                     cote_exterieure,date_affrontement,diffuseur, competition FROM rencontre ORDER BY date_affrontement")
+                     cote_exterieure,date_affrontement,diffuseur, competition FROM rencontre WHERE utilisateur_id IS NULL ORDER BY date_affrontement")
 
     rows = cursor.fetchall()
     datas = []
@@ -140,7 +141,6 @@ def bet():
     bet = request.json.get("bet")
     cursor.execute("SELECT date_affrontement  FROM rencontre WHERE id=%s", match_id)
     date_match = cursor.fetchone()
-    print(date_match)
     if datetime.now() >=  date_match["date_affrontement"]:
         return jsonify({ "error_message": "Match commencé.Paris indisponible." }), 400
     else:
@@ -149,6 +149,31 @@ def bet():
         connection.commit()
         return jsonify({ "succes_message": "Pari enregistré", "bet": bet }), 201
     #Vérifier qu'une cote existe
+
+@app.route('/betexchange', methods = ['POST'])
+def save_user_bet():
+    cursor = connection.cursor()
+    match_id = request.json.get("match_id")
+    user_id = request.json.get("user_id")
+    team_selected = request.json.get("team_selected")
+    odd = float(request.json.get("odd"))
+    bet = request.json.get("bet")
+    cursor.execute("SELECT date_affrontement  FROM rencontre WHERE id=%s", match_id)
+    date_match = cursor.fetchone()
+    if datetime.now() >=  date_match["date_affrontement"]:
+        return jsonify({ "error_message": "Match commencé.Paris indisponible." }), 400
+    else:
+        odd_home = None if team_selected != 1 else odd
+        odd_draw = None if team_selected != 2 else odd
+        odd_away = None if team_selected != 3 else odd
+        cursor.execute("INSERT INTO rencontre (competition, cote_match_nul, equipe_domicile, cote_domicile, equipe_exterieure, cote_exterieure, sport_id, \
+                        diffuseur, region, date_affrontement, date_scraping, bookmaker_id, match_reference, resultat_id, utilisateur_id, mise_maximale)\
+                        (SELECT competition, %s, equipe_domicile, %s, equipe_exterieure, %s, sport_id, diffuseur, region, date_affrontement, NULL, bookmaker_id,\
+                        match_reference, resultat_id, %s, %s  FROM rencontre WHERE id=%s)",
+                        (odd_draw, odd_home, odd_away, user_id, bet, match_id))
+        cursor.execute("UPDATE utilisateur SET argent = argent - %s WHERE id=%s",(bet*odd, user_id))
+        connection.commit()
+        return jsonify({ "succes_message": "Pari enregistré", "bet": bet }), 201
 
 @app.route('/<user_id>/bets', methods = ['GET'])
 def get_user_bets(user_id):

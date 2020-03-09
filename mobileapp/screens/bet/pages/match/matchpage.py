@@ -119,3 +119,75 @@ class Match(GridLayout):
 
         pop.open()
         return pop
+
+    def create_bet(self):
+        """
+        Instantiate the popup widget with the informations of the bet the player want
+        to use as a model
+        """
+        bet_interface = BetCreation(self.screen.username, self.screen.money, self.id, self.ids.bet_home.text,
+                                    self.ids.bet_draw.text, self.ids.bet_away.text)
+        bet_interface.id = self.id
+        bet_interface.ids.home.text = self.ids.bet_home.text
+        bet_interface.ids.draw.text = self.ids.bet_draw.text
+        bet_interface.ids.away.text = self.ids.bet_away.text
+        bet_interface.height = self.height * 4
+        bet_interface.width = self.width
+        bet_interface.open()
+        return bet_interface
+
+class BetCreation(Popup):
+    """
+    Create a popup that the player can use to create a bet that other players will
+    be able to bet against
+    """
+    def __init__(self, username, money, bet_id, home, draw, away, **kwargs):
+        super(BetCreation, self).__init__(**kwargs)
+        self.username = username
+        self.user_money = money
+        self.bet_id = bet_id
+        self.ids.home.text = home
+        self.ids.away.text = away
+        if "None" in draw:
+            print("yes")
+            self.ids.button_choice.remove_widget(self.ids.draw)
+        else:
+            self.ids.draw.text = draw
+
+    def save_bet(self):
+        if self.ids.input_money.text.isdigit() and self.ids.input_odd.text:
+            money = int(self.ids.input_money.text)
+            try:
+                odd = float(self.ids.input_odd.text.replace(",","."))
+                if 1.0 > odd:
+                    raise ValueError
+                if odd*money > self.user_money:
+                    self.ids.error.text = "Vous n'avez pas les fonds suffisants"
+                else:
+                    selection = 1
+                    for widget in reversed(self.ids.button_choice.children):
+                        if widget.state != "down":
+                            self.ids.error.text = "Vous devez choisir un résultat"
+                            selection += 1
+                            continue
+                        else:
+                            self.ids.error.text = ""
+                            headers = {"Content-Type": "application/json"}
+                            params = json.dumps({"bet":int(money), "odd":odd, "user_id": self.username,
+                                        "match_id": self.id, "team_selected": selection})
+                            UrlRequest('http://206.189.118.233/betexchange', on_success=self.dismiss, on_failure=self.fail_to_save,
+                                    req_body=params, req_headers=headers)
+            except ValueError:
+                self.ids.error.text = "Vous devez entrer un nombre entier ou décimal supérieur à 1 dans côte"
+        else:
+            self.ids.error.text = "Vous devez entrer un nombre entier supérieur à 0 dans mise"
+
+
+
+    def fail_to_save(self, req, result):
+        self.dismiss()
+        pop = Popup(title='Invalid Form',
+                    content=Label(text=result["succes_message"]),
+                    size_hint=(None, None), size=(250, 250))
+        pop.open()
+        return pop

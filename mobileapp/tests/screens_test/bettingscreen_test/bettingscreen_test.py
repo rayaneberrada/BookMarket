@@ -19,6 +19,7 @@ class FakeScreen:
     Class containing the reference to the fake current screen displayed by the kivy app
     """
     current = "register"
+    screens = [1, 2, 3]
 
 class FakeManager(ScreenManager):
     """
@@ -216,6 +217,8 @@ class TestBettingScreen:
     def test_logout(self):
         """
         Check that when the logout is called, the user is sent on the right screen
+        and the functionnalities widget is destroyed
         """
         self.object_to_test.logout()
+        assert len(self.object_to_test.screenmanager.display.screens) == 2
         assert self.object_to_test.screenmanager.display.current == "login"
