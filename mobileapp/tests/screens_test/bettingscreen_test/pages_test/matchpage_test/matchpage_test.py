@@ -137,7 +137,7 @@ class TestMatch:
         filled
         """
         bet_creator = self.object_to_test.create_bet()
-        mock_request.return_value = bet_creator.fail_to_save(None, { "succes_message": "Pari enregistré"})
+        mock_request.return_value = bet_creator.fail_to_save(None, { "error_message": "Pari enregistré"})
         mock_dump.return_value = True
         bet_creator.save_bet()
         assert bet_creator.ids.error.text == "Vous devez entrer un nombre entier supérieur à 0 dans mise"
@@ -194,6 +194,7 @@ class TestMatchPage:
         player.money = 1000
         player.user = "fake_user"
         MatchPage.player = player
+        MatchPage.height = 10
         MatchPage.add_to_view(MatchPage, None, {"matches":"fake_value"})
         assert mock_add_widget.called
         assert mock_match_instantiation.called

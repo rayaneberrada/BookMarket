@@ -18,7 +18,7 @@ class PrivateBetPage(GridLayout):
         super(PrivateBetPage, self).__init__(**kwargs)
         self.player = player
         self.bind(minimum_height=self.setter('height'))
-        UrlRequest('http://206.189.118.233/{}/rencontres?private=True'.format(self.player.sport_chosen), on_success=self.add_to_view,
+        UrlRequest('http://206.189.118.233/0/rencontres?private=True', on_success=self.add_to_view,
                           on_failure=self.fail)
 
     def add_to_view(self, req, result):
@@ -30,6 +30,7 @@ class PrivateBetPage(GridLayout):
             match = PrivateMatch(self.player)
             match.instantiate_match(value)
             self.add_widget(match)
+            match.height = self.height * 2
 
     def fail(self, req, result):
         print("it failed")
@@ -63,7 +64,7 @@ class PrivateMatch(GridLayout):
                         headers = {"Content-Type": "application/json"}
                         params = json.dumps({"bet": bet, "odd":self.odd, "user_id": self.player.username,
                                              "match_id": self.match_id, "team_selected": self.team_chosen, "private": True})
-                        UrlRequest('http://206.189.118.233/bets', on_success=self.update_player,
+                        UrlRequest('http://206.189.118.233/bet', on_success=self.update_player,
                                    on_failure=self.out_of_date, req_body=params, req_headers=headers)
                     else:
                         return self.pop_message("Mise trop élevée")
@@ -101,7 +102,7 @@ class PrivateMatch(GridLayout):
         """
         if "succes_message" in result:
             self.player.money -= result["bet"]
-            self.player.update_money()
+            self.player.ids.amount.text = "Solde: " + str(self.player.money)
             self.pop_message(result["succes_message"])
 
     def out_of_date(self, req, result):

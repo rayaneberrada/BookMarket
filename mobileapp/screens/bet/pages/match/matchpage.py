@@ -30,6 +30,7 @@ class MatchPage(GridLayout):
             match = Match(self.player)
             match.instantiate_match(value)
             self.add_widget(match)
+            match.height = self.height*2
 
 class Match(GridLayout):
     """
@@ -93,7 +94,7 @@ class Match(GridLayout):
         """
         if "succes_message" in result:
             self.player.money -= result["bet"]
-            self.player.update_money()
+            self.player.ids.amount.text = "Solde: " + str(self.player.money)
             self.pop_message(result["succes_message"])
 
     def out_of_date(self, req, result):
@@ -125,8 +126,8 @@ class Match(GridLayout):
         Instantiate the popup widget with the informations of the bet the player want
         to use as a model
         """
-        bet_interface = BetCreation(self.player.username, self.player.money, self.id, self.ids.bet_home.text,
-                                    self.ids.bet_draw.text, self.ids.bet_away.text, self.update_player)
+        bet_interface = BetCreation(self.player, self.id, self.ids.bet_home.text,
+                                    self.ids.bet_draw.text, self.ids.bet_away.text)
         bet_interface.id = self.id
         bet_interface.ids.home.text = self.ids.bet_home.text
         if "bet_draw" in bet_interface.ids:
@@ -142,14 +143,15 @@ class BetCreation(Popup):
     Create a popup that the player can use to create a bet that other players will
     be able to bet against
     """
-    def __init__(self, username, money, bet_id, home, draw, away, update_funct, **kwargs):
+    def __init__(self, player, bet_id, home, draw, away, **kwargs):
         super(BetCreation, self).__init__(**kwargs)
-        self.username = username
-        self.user_money = money
+        self.player = player
         self.bet_id = bet_id
         self.ids.home.text = home
         self.ids.away.text = away
-        self.update_funct = update_funct
+        self.bet_limit = None
+        self.odd = None
+
         if "None" in draw:
             self.ids.button_choice.remove_widget(self.ids.draw)
         else:
@@ -157,12 +159,12 @@ class BetCreation(Popup):
 
     def save_bet(self):
         if self.ids.input_money.text.isdigit() and self.ids.input_odd.text:
-            money = int(self.ids.input_money.text)
+            self.bet_limit = int(self.ids.input_money.text)
             try:
-                odd = float(self.ids.input_odd.text.replace(",","."))
-                if 1.0 > odd:
+                self.odd = float(self.ids.input_odd.text.replace(",","."))
+                if 1.0 > self.odd:
                     raise ValueError
-                if odd*money > self.user_money:
+                if self.odd*self.bet_limit > self.player.money:
                     self.ids.error.text = "Vous n'avez pas les fonds suffisants"
                 else:
                     selection = 1
@@ -173,7 +175,7 @@ class BetCreation(Popup):
                         else:
                             self.ids.error.text = ""
                             headers = {"Content-Type": "application/json"}
-                            params = json.dumps({"bet":int(money), "odd":odd, "user_id": self.username,
+                            params = json.dumps({"bet":int(self.bet_limit), "odd":self.odd, "user_id": self.player.username,
                                         "match_id": self.id, "team_selected": selection})
                             return UrlRequest('http://206.189.118.233/betexchange', on_success=self.update_player, on_failure=self.fail_to_save,
                                     req_body=params, req_headers=headers)
@@ -185,12 +187,18 @@ class BetCreation(Popup):
 
     def update_player(self, req, result):
         self.dismiss()
-        self.update_funct(req, result)
+        self.player.money -= int(self.odd)*int(self.bet_limit)
+        self.player.ids.amount.text = "Solde: " + str(self.player.money)
+        pop = Popup(title='Invalid Form',
+                    content=Label(text=result["succes_message"]),
+                    size_hint=(None, None), size=(250, 250))
+        pop.open()
+        return pop
 
     def fail_to_save(self, req, result):
         self.dismiss()
         pop = Popup(title='Invalid Form',
-                    content=Label(text=result["succes_message"]),
+                    content=Label(text=result["error_message"]),
                     size_hint=(None, None), size=(250, 250))
         pop.open()
         return pop

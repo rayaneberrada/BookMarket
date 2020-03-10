@@ -41,6 +41,7 @@ class BettingScreen(Screen):
         Depending of the current_page value, call the function creating the page
         to display the related functionnality
         """
+        self.ids.amount.text = "Solde: " + str(self.money)
         self.sport_chosen = choice if choice else self.sport_chosen
         #If user doesn't change first chocie sport, sport chosen stay the same
         page = {
@@ -76,7 +77,6 @@ class BettingScreen(Screen):
         regions_request_args = self.pages[1].args
         if  regions_request_args != "":
             self.update_view(LeaguePage(self, self.pages[1].args))
-            self.update_money()
             self.current_page += 1
         else:
             self.empty_args()
@@ -90,7 +90,6 @@ class BettingScreen(Screen):
         if  league_request_args != "":
             self.update_view(MatchPage(self))
             self.ids.bottom.remove_widget(self.submit)
-            self.update_money()
             self.current_page += 1
         else:
             self.empty_args()
@@ -174,12 +173,6 @@ class BettingScreen(Screen):
             self.pages.pop(1)
             self.ids.pages.add_widget(self.pages[0])
             self.current_page = 1
-
-    def update_money(self):
-        """
-        Update the amount of money belonging to the user and displayed
-        """
-        self.ids.amount.text = "Solde: " + str(self.money)
 
     def logout(self):
         """

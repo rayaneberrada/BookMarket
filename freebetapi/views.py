@@ -90,7 +90,7 @@ def rencontre(sport_id):
     private = bool(request.args.getlist("private"))
     #If private is set to True in the url argument private, return bet that have been created by users, otherwise return matches scraped from Winamax
     if private == True:
-        cursor.execute("SELECT * FROM rencontre WHERE utilisateur_id AND CURRENT_TIMESTAMP() <= date_affrontement ORDER BY date_affrontement")
+        cursor.execute("SELECT * FROM rencontre WHERE utilisateur_id AND CURRENT_TIMESTAMP() <= date_affrontement AND mise_maximale > 0 ORDER BY date_affrontement")
     else:
         if parameters:
             cursor.execute("SELECT MAX(date_scraping) FROM rencontre")

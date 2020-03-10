@@ -12,7 +12,7 @@
 
 <Disconnect@ButtonBehavior+Image>
     source:'images/logout2.png'  
-    size_hint: (.1, .5)
+    size_hint: (.1, 0.5)
     pos: root.width/0.125, 30
 
 <BettingScreen>:
@@ -29,19 +29,23 @@
         RelativeLayout:
             id: top
             size_hint_y: None
-            height: root.height/5
+            height: root.height / 5
             Image:
                 source: 'images/logo.png'
 
-            Label:
+        GridLayout
+            cols: 2
+            size_hint_y: None
+            height: root.height / 10
+            Widget:
+            ScaleLabel:
                 id: amount
-                font_size: 10              
-                pos: 300, -50
+                background_color: 0.109, 0.158, 0.235, 1
 
         GridLayout:
             id: screen
             size_hint_y: None
-            height: root.height*(3/5)
+            height: root.height / 2
             cols: 3
             canvas:
                 Color:
@@ -52,7 +56,7 @@
 
             BackgroundLabel:
                 size_hint: None, None
-                height: root.height*(3/5)
+                height: root.height / 2
                 width: root.width/100
                 background_color: 0.150, 0.168, 0.194, 1
 
@@ -61,7 +65,7 @@
 
             BackgroundLabel:
                 size_hint: None, None
-                height: root.height*(3/5)
+                height: root.height / 2
                 width: root.width/100
                 background_color: 0.150, 0.168, 0.194, 1
 

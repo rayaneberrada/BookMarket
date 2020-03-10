@@ -207,13 +207,6 @@ class TestBettingScreen:
         """
         assert self.object_to_test.empty_args().content.text == 'Saisissez une réponse'
 
-    def test_update_money(self):
-        """
-        Check update_money modify properly the amount variable
-        """
-        self.object_to_test.update_money()
-        assert self.object_to_test.ids.amount.text == "Solde: 1000"
-
     def test_logout(self):
         """
         Check that when the logout is called, the user is sent on the right screen
