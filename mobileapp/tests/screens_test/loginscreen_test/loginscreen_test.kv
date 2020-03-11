@@ -97,16 +97,17 @@
 
         GridLayout:
             cols: 3
+            size_hint_x: None
+            width: root.width
 
             Widget:
                 size_hint: None, None
-                width: root.width / 3
+                width: root.width / 2
                 height: root.height / 25
 
             Label:
                 color: 0,0,0,1
                 text: '[ref=some]Pas de compte? Inscris-toi![/ref]'
-                text_size: root.width/2.09, root.height/9
                 markup: True
                 on_ref_press:
                     root.manager.transition.direction = "right"
@@ -114,9 +115,8 @@
 
             Widget:
                 size_hint: None, None
-                width: root.width / 25
+                width: root.width / 2
                 height: root.height / 25
-
         Widget:
             size_hint_y: None
             height: root.height/25

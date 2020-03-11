@@ -12,7 +12,7 @@ class JavascrapPipeline(object):
 
         connection = pymysql.connect(host='localhost',
                              user='rayane',
-                             password='i77EWEsN',
+                             password='@@@@BBBBcccc1234',
                              db='BookMarket',
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
@@ -45,6 +45,7 @@ class JavascrapPipeline(object):
             for match in matches:
                 cursor.execute("SELECT resultat_id FROM rencontre WHERE id=%s", match["id"])
                 current_result = cursor.fetchone()["resultat_id"]
+                print("yes")
                 # can help for debugging: print(match["id"], current_result, item["result"])
 
                 if current_result == None:
@@ -57,11 +58,11 @@ class JavascrapPipeline(object):
                     for bet in bets:
                         if bet["verifie"] != 1:
                             #We get all the bets that haven't been checked for their result yet
-                            if bet["result_id"] == result:
+                            if bet["equipe_pariee"] == result:
                                 winning = int(bet["mise"]*bet["cote"])
                                 cursor.execute("UPDATE utilisateur SET argent = argent + %s WHERE id=%s", (winning, bet["utilisateur_id"]))
                                 #If the result set in the bet is the same as the result of the match, we set a value for winning
-                            elif bet["result_id"] != result and match["utilisateur_id"]:
+                            elif bet["equipe_pariee"] != result and match["utilisateur_id"]:
                             #If the match and bet result don't match, and it's a bet created by a user
                                 winning = int(bet["mise"]*bet["cote"] + bet["mise"] + match["mise_maximale"]*bet["cote"])
                                 """
@@ -81,12 +82,14 @@ class JavascrapPipeline(object):
             matches = cursor.fetchall()
             for match in matches:
                 #For yesterday matches
-                if match["mise_maximale"] > 0:
-                    odd = match["cote_domicile"] if match["equi_domicile"] else match["cote_exterieure"] if match["equipe_exterieure"] else match["cote_match_nul"]
-                    refund = match["mise_maximale"]*odd
-                    cursor.execute("UPDATE utilisateur SET argent = argent + %s WHERE id=%s", (refund, match["utilisateur_id"]))
-                    #If the the amount set to bet by the creator of the bet is not empty, refund the creator of what is left
-                if not match["resultat_id"]:
+                if match["utilisateur_id"]:
+                    if match["mise_maximale"] > 0:
+                        odd = match["cote_domicile"] if match["cote_domicile"] else match["cote_exterieure"] if match["cote_exterieure"] else match["cote_match_nul"]
+                        refund = match["mise_maximale"]*odd
+                        cursor.execute("UPDATE rencontre SET mise_maximale = 0 WHERE id=%s", match["id"])
+                        cursor.execute("UPDATE utilisateur SET argent = argent + %s WHERE id=%s", (refund, match["utilisateur_id"]))
+                        #If the the amount set to bet by the creator of the bet is not empty, refund the creator of what is left
+                else:
                     #If a match stil doesn't have a result, refund the users who bets on this match
                     cursor.execute("SELECT * FROM paris WHERE rencontre_id=%s", match["id"])
                     bets = cursor.fetchall()
@@ -96,5 +99,6 @@ class JavascrapPipeline(object):
                         else:
                             refund = bet["mise"]
                             cursor.execute("UPDATE utilisateur SET argent = argent + %s WHERE id=%s", (refund, match["utilisateur_id"]))
+                            cursor.execute("UPDATE paris SET verifie=1 WHERE id=%s", bet["id"])
 
         connection.commit()

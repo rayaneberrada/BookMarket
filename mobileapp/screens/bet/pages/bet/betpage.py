@@ -8,10 +8,11 @@ class BetPage(GridLayout):
     """
     Class mangaging the display and control of the Bet objects
     """
-    def __init__(self, user, **kwargs):
+    def __init__(self, player, search_parameters, **kwargs):
         super(BetPage, self).__init__(**kwargs)
         self.bind(minimum_height=self.setter('height'))
-        request_bets = UrlRequest("http://206.189.118.233/{}/bets".format(user), self.parse_json)
+        self.search_parameters = search_parameters
+        request_bets = UrlRequest("http://206.189.118.233/{}/bets".format(player.username), self.parse_json)
 
     def parse_json(self, req, result):
         """
@@ -26,7 +27,13 @@ class BetPage(GridLayout):
             else:
                 color = (0.500, 0.500, 0.500, 1)
             bet = Bet(color, value)
-            self.add_widget(bet)
+            if not self.search_parameters:
+                self.add_widget(bet)
+            else:
+                if self.search_parameters.lower() in bet.ids.title.text.lower():
+                    self.add_widget(bet)
+                else:
+                    continue
 
 class Bet(GridLayout):
     """
@@ -44,10 +51,10 @@ class Bet(GridLayout):
         """
         team_chosen = "Domicile" if value["equipe_pariee"] == 1 else("Exterieur" if value["equipe_pariee"] == 2 else "Nul")
         if value["match_infos"]["resultat_id"] == 1:
-            result = value["equipe_domicile"]
-        if value["match_infos"]["resultat_id"] == 2:
-            result = value["equipe_exterieure"]
-        if value["match_infos"]["resultat_id"] == 3:
+            result = "Résultat: " + value["match_infos"]["equipe_domicile"]
+        elif value["match_infos"]["resultat_id"] == 2:
+            result = "Résultat: " + value["match_infos"]["equipe_exterieure"]
+        elif value["match_infos"]["resultat_id"] == 3:
             result = "Nul"
         else:
             result = "Match pas encore joué"
@@ -55,9 +62,9 @@ class Bet(GridLayout):
         if self.color == ((0.6, 0, 0, 1)):
             self.ids.earning.text = "   Pertes: -" + str(value["mise"])
         elif self.color == ((0, 0.6, 0, 1)):
-            self.ids.earning.text = "  Gains: +" + str(value["mise"]*float(value["cote"]))
+            self.ids.earning.text = "  Gains: +" + str(int(value["mise"]*float(value["cote"])))
         else:
-            self.ids.earning.text = "   Gains potentiels: +" + str(value["mise"]*float(value["cote"]))
+            self.ids.earning.text = "   Gains potentiels: +" + str(int(value["mise"]*float(value["cote"])))
 
         self.ids.title.text = value["match_infos"]["equipe_domicile"] + " vs " + value["match_infos"]["equipe_exterieure"]
         self.ids.date.text = "   Date match: " + value["match_infos"]["date_affrontement"]

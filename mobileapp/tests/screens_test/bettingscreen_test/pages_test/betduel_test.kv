@@ -1,28 +1,49 @@
+<BackgroundColor@Widget>
+    background_color: 0.185, 0.202, 0.235, 1
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<ScaleLabel@Label+BackgroundColor>:
+    _scale: 1. if self.texture_size[0] < self.width else float(self.width) / self.texture_size[0]
+    canvas.before:
+        PushMatrix
+        Scale:
+            origin: self.center
+            x: self._scale or 1.
+            y: self._scale or 1.
+    canvas.after:
+        PopMatrix
+
 <PrivateBetPage>:
     cols: 1
     size_hint_y: None
+    id: betduel
     spacing: 10
 
 <PrivateMatch>:
     size_hint_y: None
     cols: 1
-    BackgroundLabel:
+    ScaleLabel:
         id: title
         background_color: 0.185, 0.202, 0.235, 1
 
-    BackgroundLabel:
+    ScaleLabel:
         background_color: 0.185, 0.202, 0.235, 1
         id: match
 
-    BackgroundLabel:
+    ScaleLabel:
         background_color: 0.185, 0.202, 0.235, 1
         id: bet
 
     GridLayout:
         cols: 2
-        BackgroundLabel:
+        ScaleLabel:
             size_hint_x: None
-            width: root.width/4
+            width: root.width/1.5
             background_color: 0.185, 0.202, 0.235, 1
             id: mise
 

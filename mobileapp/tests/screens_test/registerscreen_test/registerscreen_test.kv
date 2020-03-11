@@ -79,7 +79,6 @@
             Label:
                 color: 0,0,0,1
                 text: '[ref=some][b]S\'inscrire[/b][/ref]'
-                text_size: root.width/9, root.height/35
                 markup: True
                 on_ref_press:
                     root.manager.transition.direction = "left"
@@ -96,6 +95,8 @@
 
         GridLayout:
             cols: 3
+            size_hint_x: None
+            width: root.width
 
             Widget:
                 size_hint: None, None
@@ -103,17 +104,18 @@
                 height: root.height / 25
 
             Label:
+                size_hint_y: None
                 color: 0,0,0,1
                 text: '[ref=some]Déjà inscrit? Viens jouer![/ref]'
-                text_size: root.width/2.15, root.height/9
                 markup: True
+                height: root.height / 4 
                 on_ref_press:
                     root.manager.transition.direction = "left"
                     root.login()
 
             Widget:
                 size_hint: None, None
-                width: root.width / 25
+                width: root.width / 3
                 height: root.height / 25
 
         Widget:

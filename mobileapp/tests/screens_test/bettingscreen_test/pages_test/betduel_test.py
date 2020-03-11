@@ -15,7 +15,7 @@ class TestBetDuelPage:
     player = Mock()
     player.money = 1000
     player.user = "fake_user"
-    object_to_test = PrivateBetPage(player)
+    object_to_test = PrivateBetPage(player, None)
     bet = {"matches": [{'cote_nul': 'None', 'domicile': 'Écosse', 'cote_dom': 'None', 'exterieur': 'France',
            'cote_ext': '1.20', 'date': str(datetime.datetime(2020, 3, 8, 16, 0)), 'mise': 100, 'tv': 'FRANCE2',
            'id': '741', 'competition': 'Matchs', 'region': 'Tournoi des 6 Nations', 'sport': 2}]}

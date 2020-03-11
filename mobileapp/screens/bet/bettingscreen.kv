@@ -15,6 +15,21 @@
     size_hint: (.1, 0.5)
     pos: root.width/0.125, 30
 
+<Search>
+    cols: 2
+    TextInput:
+        id: search_input
+        hint_text: "Nom équipe"
+        size_hint_y: None
+        height: 30
+    Button:
+        size_hint: None, None
+        widht: root.width / 5
+        height: 30
+        text: "Search"
+        on_press: root.update_private_bets(root.object_to_search)
+
+
 <BettingScreen>:
     name: "datadisplay"
     canvas:
@@ -44,30 +59,46 @@
 
         GridLayout:
             id: screen
+            cols: 1
             size_hint_y: None
-            height: root.height / 2
-            cols: 3
+            height: root.height / 2.4
             canvas:
                 Color:
                     rgba: 0, 0, 0, 1
                 Rectangle:
                     size: self.size
                     pos: self.pos
+            GridLayout:
+                cols:3
+                size_hint_y: None
+                height: root.height / 2.4
+                BackgroundLabel:
+                    size_hint: None, None
+                    height: root.height / 2.4
+                    width: root.width/100
+                    background_color: 0.150, 0.168, 0.194, 1
 
-            BackgroundLabel:
-                size_hint: None, None
-                height: root.height / 2
-                width: root.width/100
-                background_color: 0.150, 0.168, 0.194, 1
+                ScrollView:
+                    size_hint_y: None
+                    height: root.height / 2.4
+                    id: pages
 
-            ScrollView:
-                id: pages
+                BackgroundLabel:
+                    size_hint: None, None
+                    height: root.height / 2.4
+                    width: root.width/100
+                    background_color: 0.150, 0.168, 0.194, 1
 
-            BackgroundLabel:
-                size_hint: None, None
-                height: root.height / 2
-                width: root.width/100
-                background_color: 0.150, 0.168, 0.194, 1
+            GridLayout
+                cols: 1
+                id: search
+                canvas:
+                    Color:
+                        rgba: 0, 0, 0, 1
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+
 
         RelativeLayout:
             id: bottom

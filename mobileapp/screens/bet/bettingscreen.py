@@ -6,6 +6,8 @@ To manage the visual display of the betting screen, check bettingscreen.kv.
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
+from kivy.uix.textinput import TextInput
+from kivy.uix.gridlayout import GridLayout
 
 from  screens.bet.pages.betduel.betduel_page import PrivateBetPage
 from  screens.bet.pages.bestplayers.bestplayerspage import BestPlayerPage
@@ -13,6 +15,18 @@ from  screens.bet.pages.bet.betpage import BetPage
 from  screens.bet.pages.match.matchpage import MatchPage
 from  screens.bet.pages.matchselection.selectionpages import SportPage, RegionPage, LeaguePage
 from  screens.bet.buttons.buttons import GoBackward, SubmitButton
+
+class Search(GridLayout):
+    def __init__(self, player, object_to_search, **kwargs):
+        super(Search, self).__init__(**kwargs)
+        self.player = player
+        self.object_to_search = object_to_search
+
+    def update_private_bets(self, object_to_search):
+        self.player.ids.pages.remove_widget(self.player.pages[1])
+        self.player.pages.pop()
+        self.player.pages.append(self.object_to_search(self.player, self.ids.search_input.text))
+        self.player.ids.pages.add_widget(self.player.pages[1])
 
 class BettingScreen(Screen):
     """
@@ -33,6 +47,10 @@ class BettingScreen(Screen):
         self.username = user
         self.money = money
         self.sport_chosen = None
+        ###Search Input###
+        self.search = None
+        ###Matches returned###
+        self.matches_widgets = []
 
         self.create_view(None)
 
@@ -101,10 +119,12 @@ class BettingScreen(Screen):
         was arbitrary and will be use every time we build a functionnality
         that has one page and is accessible from SportPage.
         """
+        self.search = Search(self, BetPage)
         self.ids.pages.remove_widget(self.pages[0])
-        self.pages.append(BetPage(self.username))
+        self.pages.append(BetPage(self, None))
         self.ids.pages.add_widget(self.pages[1])
         self.ids.bottom.add_widget(self.backward)
+        self.ids.search.add_widget(self.search)
         self.current_page = 9
 
     def create_winners_page(self):
@@ -122,10 +142,12 @@ class BettingScreen(Screen):
         Create the page containing all the bets created by user.
         Anyone can then bet on any of those bets.
         """
+        self.search = Search(self, PrivateBetPage)
         self.ids.pages.remove_widget(self.pages[0])
-        self.pages.append(PrivateBetPage(self))
+        self.pages.append(PrivateBetPage(self, None))
         self.ids.pages.add_widget(self.pages[1])
         self.ids.bottom.add_widget(self.backward)
+        self.ids.search.add_widget(self.search)
         self.current_page = 9
 
     def update_view(self, page_to_add):
@@ -173,6 +195,9 @@ class BettingScreen(Screen):
             self.pages.pop(1)
             self.ids.pages.add_widget(self.pages[0])
             self.current_page = 1
+            if len(self.ids.search.children) == 1:
+                print("yes")
+                self.ids.search.remove_widget(self.search)
 
     def logout(self):
         """
@@ -180,3 +205,5 @@ class BettingScreen(Screen):
         """
         self.screenmanager.display.screens.pop()
         self.screenmanager.display.current = "login"
+
+

@@ -129,12 +129,12 @@ class Match(GridLayout):
         bet_interface = BetCreation(self.player, self.id, self.ids.bet_home.text,
                                     self.ids.bet_draw.text, self.ids.bet_away.text)
         bet_interface.id = self.id
-        bet_interface.ids.home.text = self.ids.bet_home.text
+        bet_interface.ids.home.text = self.ids.bet_home.text[:12]
         if "bet_draw" in bet_interface.ids:
             bet_interface.ids.draw.text = self.ids.bet_draw.text
-        bet_interface.ids.away.text = self.ids.bet_away.text
-        bet_interface.height = self.height * 4
-        bet_interface.width = self.width
+        bet_interface.ids.away.text = self.ids.bet_away.text[:12]
+        bet_interface.height = self.height * 2.7
+        bet_interface.width = self.width * 0.95
         bet_interface.open()
         return bet_interface
 

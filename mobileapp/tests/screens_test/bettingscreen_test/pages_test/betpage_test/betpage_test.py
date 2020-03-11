@@ -1,7 +1,7 @@
 """
 File testing the right behavior of betpage.py
 """
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from kivy.lang.builder import Builder
 
@@ -13,6 +13,9 @@ class TestBetPage:
     """
     Class checking BetPage follow the expected behavior
     """
+    user = Mock()
+    user.username = "fake_user"
+    object_to_test = BetPage(user, None)
     response = {"bets":[{'cote': '1.35', 'verifie':0, 'mise':50,
                          'date_enregistrement': 'Thu, 20 Feb 2020 18:35:13 GMT',
                          'equipe_pariee': 1, 'id': 42,
@@ -26,7 +29,7 @@ class TestBetPage:
         """
         Check the parser use the function to add the Bet object to BetPage
         """
-        BetPage.parse_json(BetPage, None, self.response)
+        self.object_to_test.parse_json(None, self.response)
         assert mock_add_widget.called
 
 class TestBet:
@@ -46,7 +49,7 @@ class TestBet:
         Check that when instantiated, the informations are correctly added to the widget.
         """
         bet = Bet((0.500, 0.500, 0.500, 1), self.response)
-        assert bet.ids.earning.text == "   Gains potentiels: +67.5"
+        assert bet.ids.earning.text == "   Gains potentiels: +67"
         assert bet.ids.title.text == "Espagne vs Suède"
         assert bet.ids.date.text == "   Date match: Mon, 15 Jun 2020 21:00:00 GMT"
         assert bet.ids.bet.text == "   Pari: 50 parié sur Domicile avec une cote de 1.35"

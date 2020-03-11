@@ -1,3 +1,14 @@
+<ScaleLabel@Label>:
+    _scale: 1. if self.texture_size[0] < self.width else float(self.width) / self.texture_size[0]
+    canvas.before:
+        PushMatrix
+        Scale:
+            origin: self.center
+            x: self._scale or 1.
+            y: self._scale or 1.
+    canvas.after:
+        PopMatrix
+
 <BackgroundColor@Widget>
     background_color: 1, 1, 1, 1
     canvas.before:
@@ -12,8 +23,23 @@
 
 <Disconnect@ButtonBehavior+Image>
     source:'images/logout2.png'  
-    size_hint: (.1, .5)
+    size_hint: (.1, 0.5)
     pos: root.width/0.125, 30
+
+<Search>
+    cols: 2
+    TextInput:
+        id: search_input
+        hint_text: "Nom équipe"
+        size_hint_y: None
+        height: 30
+    Button:
+        size_hint: None, None
+        widht: root.width / 5
+        height: 30
+        text: "Search"
+        on_press: root.update_private_bets()
+
 
 <BettingScreen>:
     name: "datadisplay"
@@ -29,41 +55,61 @@
         RelativeLayout:
             id: top
             size_hint_y: None
-            height: root.height/5
+            height: root.height / 5
             Image:
                 source: 'images/logo.png'
 
-            Label:
+        GridLayout
+            cols: 2
+            size_hint_y: None
+            height: root.height / 10
+            Widget:
+            ScaleLabel:
                 id: amount
-                font_size: 10              
-                pos: 300, -50
+                background_color: 0.109, 0.158, 0.235, 1
 
         GridLayout:
             id: screen
+            cols: 1
             size_hint_y: None
-            height: root.height*(3/5)
-            cols: 3
+            height: root.height / 2.4
             canvas:
                 Color:
                     rgba: 0, 0, 0, 1
                 Rectangle:
                     size: self.size
                     pos: self.pos
+            GridLayout:
+                cols:3
+                size_hint_y: None
+                height: root.height / 2.4
+                BackgroundLabel:
+                    size_hint: None, None
+                    height: root.height / 2.4
+                    width: root.width/100
+                    background_color: 0.150, 0.168, 0.194, 1
 
-            BackgroundLabel:
-                size_hint: None, None
-                height: root.height*(3/5)
-                width: root.width/100
-                background_color: 0.150, 0.168, 0.194, 1
+                ScrollView:
+                    size_hint_y: None
+                    height: root.height / 2.4
+                    id: pages
 
-            ScrollView:
-                id: pages
+                BackgroundLabel:
+                    size_hint: None, None
+                    height: root.height / 2.4
+                    width: root.width/100
+                    background_color: 0.150, 0.168, 0.194, 1
 
-            BackgroundLabel:
-                size_hint: None, None
-                height: root.height*(3/5)
-                width: root.width/100
-                background_color: 0.150, 0.168, 0.194, 1
+            GridLayout
+                cols: 1
+                id: search
+                canvas:
+                    Color:
+                        rgba: 0, 0, 0, 1
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+
 
         RelativeLayout:
             id: bottom

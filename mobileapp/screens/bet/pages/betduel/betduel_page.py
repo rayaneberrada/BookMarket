@@ -14,9 +14,10 @@ class PrivateBetPage(GridLayout):
     """
     Class managing and containing the matcheds requested by the user
     """
-    def __init__(self, player, **kwargs):
+    def __init__(self, player, search_params, **kwargs):
         super(PrivateBetPage, self).__init__(**kwargs)
         self.player = player
+        self.search_params = search_params
         self.bind(minimum_height=self.setter('height'))
         UrlRequest('http://206.189.118.233/0/rencontres?private=True', on_success=self.add_to_view,
                           on_failure=self.fail)
@@ -29,8 +30,15 @@ class PrivateBetPage(GridLayout):
         for value in result["matches"]:
             match = PrivateMatch(self.player)
             match.instantiate_match(value)
-            self.add_widget(match)
-            match.height = self.height * 2
+            if not self.search_params:
+                self.add_widget(match)
+                match.height = self.height * 2
+            else:
+                if self.search_params.lower() in match.ids.match.text.lower():
+                    self.add_widget(match)
+                    match.height = self.height * 2
+                else:
+                    continue
 
     def fail(self, req, result):
         print("it failed")
