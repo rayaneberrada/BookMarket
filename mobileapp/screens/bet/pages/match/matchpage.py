@@ -30,7 +30,7 @@ class MatchPage(GridLayout):
             match = Match(self.player)
             match.instantiate_match(value)
             self.add_widget(match)
-            match.height = self.player.ids.screen.height / 2.5
+            match.height = self.player.ids.screen.height / 1.8
 
 class Match(GridLayout):
     """
