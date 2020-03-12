@@ -17,6 +17,7 @@ class TestMatch:
     player = Mock()
     player.money = 1000
     player.user = "fake_user"
+    player.height = 10
     object_to_test = Match(player)
 
     @patch("json.dumps")
@@ -34,7 +35,7 @@ class TestMatch:
         request_mock.return_value = self.object_to_test.update_player(None, respone)
         self.object_to_test.ids.input_home.text = "10"
         self.object_to_test.ids.bet_home.text = "2.35"
-        self.object_to_test.bet("Domicile")
+        self.object_to_test.bet("Parier Dom")
         assert request_mock.called
         assert self.object_to_test.player.money == 990
 
@@ -51,7 +52,7 @@ class TestMatch:
         request_mock.return_value = self.object_to_test.out_of_date(None, respone)
         self.object_to_test.ids.input_home.text = "10"
         self.object_to_test.ids.bet_home.text = "2.35"
-        self.object_to_test.bet("Domicile")
+        self.object_to_test.bet("Parier Dom")
         assert request_mock.called
         assert self.object_to_test.out_of_date(None, respone).content.text == "Pari déjà en cours"
 
@@ -68,7 +69,7 @@ class TestMatch:
         """
         self.object_to_test.ids.input_home.text = "Nantes"
         self.object_to_test.ids.bet_home.text = "2.35"
-        assert self.object_to_test.bet("Domicile").content.text == "La mise doit être un nombre"
+        assert self.object_to_test.bet("Parier Dom").content.text == "La mise doit être un nombre"
 
     def test_bet_empty(self):
         """
@@ -77,7 +78,7 @@ class TestMatch:
         """
         self.object_to_test.ids.input_home.text = ""
         self.object_to_test.ids.bet_home.text = "2.35"
-        assert self.object_to_test.bet("Domicile").content.text == "Champ vide"
+        assert self.object_to_test.bet("Parier Dom").content.text == "Champ vide"
 
     def test_bet_too_high(self):
         """
@@ -86,7 +87,7 @@ class TestMatch:
         """
         self.object_to_test.ids.input_home.text = "1500"
         self.object_to_test.ids.bet_home.text = "2.35"
-        assert self.object_to_test.bet("Domicile").content.text == "Argent insuffisant"
+        assert self.object_to_test.bet("Parier Dom").content.text == "Argent insuffisant"
 
     def test_instantiate_match(self):
         """
@@ -140,15 +141,15 @@ class TestMatch:
         mock_request.return_value = bet_creator.fail_to_save(None, { "error_message": "Pari enregistré"})
         mock_dump.return_value = True
         bet_creator.save_bet()
-        assert bet_creator.ids.error.text == "Vous devez entrer un nombre entier supérieur à 0 dans mise"
+        assert bet_creator.ids.error.text == "Mise/côte doivent contenir un nombre"
         bet_creator.ids.input_money.text = "100"
         bet_creator.save_bet()
-        assert bet_creator.ids.error.text == "Vous devez entrer un nombre entier supérieur à 0 dans mise"
+        assert bet_creator.ids.error.text == "Mise/côte doivent contenir un nombre"
         bet_creator.ids.input_odd.text = "azdadz"
         bet_creator.save_bet()
-        assert bet_creator.ids.error.text == "Vous devez entrer un nombre entier ou décimal supérieur à 1 dans côte"
+        assert bet_creator.ids.error.text == "Côte doit être supérieur à 1"
         bet_creator.ids.input_odd.text = "0.5"
-        assert bet_creator.ids.error.text == "Vous devez entrer un nombre entier ou décimal supérieur à 1 dans côte"
+        assert bet_creator.ids.error.text == "Côte doit être supérieur à 1"
         bet_creator.ids.input_odd.text = "100"
         bet_creator.save_bet()
         assert bet_creator.ids.error.text == "Vous n'avez pas les fonds suffisants"
@@ -193,6 +194,7 @@ class TestMatchPage:
         player = Mock()
         player.money = 1000
         player.user = "fake_user"
+        player.ids.screen.height = 10
         MatchPage.player = player
         MatchPage.height = 10
         MatchPage.add_to_view(MatchPage, None, {"matches":"fake_value"})

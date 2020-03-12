@@ -107,6 +107,7 @@ class BettingScreen(Screen):
         that has one page and is accessible from SportPage.
         """
         self.search = Search(self, BetPage)
+        self.search.height = self.height / 15
         self.ids.pages.remove_widget(self.pages[0])
         self.pages.append(BetPage(self, None))
         self.ids.pages.add_widget(self.pages[1])
@@ -130,6 +131,7 @@ class BettingScreen(Screen):
         Anyone can then bet on any of those bets.
         """
         self.search = Search(self, PrivateBetPage)
+        self.search.height = self.height / 15
         self.ids.pages.remove_widget(self.pages[0])
         self.pages.append(PrivateBetPage(self, None))
         self.ids.pages.add_widget(self.pages[1])

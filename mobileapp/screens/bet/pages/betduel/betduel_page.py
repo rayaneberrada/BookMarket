@@ -32,11 +32,11 @@ class PrivateBetPage(GridLayout):
             match.instantiate_match(value)
             if not self.search_params:
                 self.add_widget(match)
-                match.height = self.height * 2
+                match.height = self.player.ids.screen.height / 2.2
             else:
                 if self.search_params.lower() in match.ids.match.text.lower():
                     self.add_widget(match)
-                    match.height = self.height * 2
+                    match.height = self.player.ids.screen.height / 2.2
                 else:
                     continue
 

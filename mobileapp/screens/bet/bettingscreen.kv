@@ -17,15 +17,13 @@
 
 <Search>
     cols: 2
+    size_hint_y: None
     TextInput:
         id: search_input
         hint_text: "Nom équipe"
-        size_hint_y: None
-        height: 50
     Button:
-        size_hint: None, None
+        size_hint_x: None
         widht: root.width / 5
-        height: 50
         text: "Search"
         on_press: root.update_private_bets()
 

@@ -15,6 +15,7 @@ class TestBetPage:
     """
     user = Mock()
     user.username = "fake_user"
+    user.ids.screen.height = 10
     object_to_test = BetPage(user, None)
     response = {"bets":[{'cote': '1.35', 'verifie':0, 'mise':50,
                          'date_enregistrement': 'Thu, 20 Feb 2020 18:35:13 GMT',

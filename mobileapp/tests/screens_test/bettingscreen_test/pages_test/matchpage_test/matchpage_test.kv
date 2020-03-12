@@ -54,13 +54,15 @@
 <Match>:
     size_hint_y: None
     cols: 1
-    BackgroundLabel:
+    ScaleLabel:
         id: title
         background_color: 0.185, 0.202, 0.235, 1
 
     GridLayout:
         cols: 3
-        BackgroundLabel:
+        ScaleLabel:
+            size_hint_x: None
+            width: root.width/2
             background_color: 0.185, 0.202, 0.235, 1
             id: bet_home
         TextInput:
@@ -69,13 +71,15 @@
 
         Button:
             id: submit_home
-            text: "Domicile"
+            text: "Parier Dom"
             on_press: root.bet(self.text)
 
     GridLayout:
         id: draw
         cols: 3
-        BackgroundLabel:
+        ScaleLabel:
+            size_hint_x: None
+            width: root.width/2
             background_color: 0.185, 0.202, 0.235, 1
             id: bet_draw
         TextInput:
@@ -83,13 +87,15 @@
             text: ""
         Button:
             id: submit_draw
-            text: "Nul"
+            text: "Parier Nul"
             on_press: root.bet(self.text)
 
 
     GridLayout:
         cols: 3
-        BackgroundLabel:
+        ScaleLabel:
+            size_hint_x: None
+            width: root.width/2
             background_color: 0.185, 0.202, 0.235, 1
             id: bet_away
         TextInput:
@@ -97,7 +103,7 @@
             text: ""
         Button:
             id: submit_away
-            text: "Extérieur"
+            text: "Parier Ext"
             on_press: root.bet(self.text)
 
     Button:

@@ -30,7 +30,7 @@ class MatchPage(GridLayout):
             match = Match(self.player)
             match.instantiate_match(value)
             self.add_widget(match)
-            match.height = self.height*2
+            match.height = self.player.ids.screen.height / 2.5
 
 class Match(GridLayout):
     """
@@ -45,15 +45,15 @@ class Match(GridLayout):
         Look for the informations contained in the inputs and eitheir display an error message
         if someting is missing, or send a request to the server to save the bet made by the user.
         """
-        if button_text == "Domicile":
+        if button_text == "Parier Dom":
             input_amount = self.ids.input_home.text
             odd = self.ids.bet_home.text.split()[0]
             team_selected = 1
-        elif button_text == "Extérieur":
+        elif button_text == "Parier Ext":
             input_amount = self.ids.input_away.text
             odd = self.ids.bet_away.text.split()[0]
             team_selected = 2
-        elif button_text == "Nul":
+        elif button_text == "Parier Nul":
             input_amount = self.ids.input_draw.text
             odd = self.ids.bet_draw.text.split()[0]
             team_selected = 3
@@ -134,7 +134,7 @@ class Match(GridLayout):
         if "bet_draw" in bet_interface.ids:
             bet_interface.ids.draw.text = self.ids.bet_draw.text
         bet_interface.ids.away.text = self.ids.bet_away.text[:12]
-        bet_interface.height = self.height * 2.7
+        bet_interface.height = self.player.height *0.6
         bet_interface.width = self.width * 0.95
         bet_interface.open()
         return bet_interface
@@ -170,7 +170,7 @@ class BetCreation(Popup):
             self.bet_limit = int(self.ids.input_money.text)
             try:
                 self.odd = float(self.ids.input_odd.text.replace(",", "."))
-                if self.odd < 1.0:
+                if self.odd <= 1:
                     raise ValueError
                 if self.odd*self.bet_limit > self.player.money:
                     self.ids.error.text = "Vous n'avez pas les fonds suffisants"
@@ -189,9 +189,9 @@ class BetCreation(Popup):
                                               req_body=params, req_headers=headers)
                     self.ids.error.text = "Vous devez choisir un résultat"
             except ValueError:
-                self.ids.error.text = "Vous devez entrer un nombre entier ou décimal supérieur à 1 dans côte"
+                self.ids.error.text = "Côte doit être supérieur à 1"
         else:
-            self.ids.error.text = "Vous devez entrer un nombre entier supérieur à 0 dans mise"
+            self.ids.error.text = "Mise/côte doivent contenir un nombre"
 
     def update_player(self, req, result):
         """

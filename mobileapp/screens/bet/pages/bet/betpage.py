@@ -12,6 +12,7 @@ class BetPage(GridLayout):
         super(BetPage, self).__init__(**kwargs)
         self.bind(minimum_height=self.setter('height'))
         self.search_parameters = search_parameters
+        self.player = player
         request_bets = UrlRequest("http://206.189.118.233/{}/bets".format(player.username), self.parse_json)
 
     def parse_json(self, req, result):
@@ -27,6 +28,7 @@ class BetPage(GridLayout):
             else:
                 color = (0.500, 0.500, 0.500, 1)
             bet = Bet(color, value)
+            bet.height = self.player.ids.screen.height / 3
             if not self.search_parameters:
                 self.add_widget(bet)
             else:
