@@ -183,7 +183,6 @@ class BettingScreen(Screen):
             self.ids.pages.add_widget(self.pages[0])
             self.current_page = 1
             if len(self.ids.search.children) == 1:
-                print("yes")
                 self.ids.search.remove_widget(self.search)
 
     def logout(self):
