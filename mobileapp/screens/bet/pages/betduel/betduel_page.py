@@ -19,7 +19,7 @@ class PrivateBetPage(GridLayout):
         self.player = player
         self.search_params = search_params
         self.bind(minimum_height=self.setter('height'))
-        UrlRequest('http://206.189.118.233/0/rencontres?private=True', on_success=self.display_message,
+        UrlRequest('http://206.189.118.233/0/rencontres?private=True', on_success=self.add_to_view,
                     on_failure=self.display_message, on_error=self.display_message,)
 
     def add_to_view(self, req, result):
@@ -42,13 +42,11 @@ class PrivateBetPage(GridLayout):
 
     def display_message(self, req, result):
         """
-        Function displaying the answer from the server.
+        If success we don't need a message because widget will already be displayed
         Otherwiser display an error message if returned by the server, or a connexion issue
         if the server couldn't be reached
         """
-        if "success_message" in result:
-            return self.popup_message(result["success_message"])
-        elif "error_message" in result:
+        if "error_message" in result:
             return self.popup_message(result["error_message"])
         else:
             return self.popup_message("Connexion avec le serveur impossible")
@@ -86,7 +84,6 @@ class PrivateMatch(GridLayout):
             if self.ids.input_amount.text.isdigit() and int(self.ids.input_amount.text) >= 1 :
                 bet = int(self.ids.input_amount.text)
                 if self.player.money >= bet:
-                    print(bet, self.max_bet)
                     if self.max_bet >= bet:
                         self.max_bet -= int(bet)
                         self.ids.mise.text = "mise maximale: " + str(self.max_bet)
@@ -111,7 +108,6 @@ class PrivateMatch(GridLayout):
         """
         self.max_bet = value["mise"]
         tv = value["tv"] if value["tv"] is not None else ""
-        print(value["cote_dom"], value["cote_ext"])
         self.team_chosen = 1 if value["cote_dom"] != "None" else (2 if value["cote_ext"] != "None" else 3)
         bet_team_name = value["domicile"] if value["cote_dom"] != "None" else (value["exterieur"] if value["cote_ext"] != "None" else "Nul")
         self.odd = "1"

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_file
 from flask import request, jsonify, abort
 from passlib.apps import custom_app_context as pwd_context
 import pymysql
@@ -13,6 +13,13 @@ connection = pymysql.connect(host='localhost',
                      charset='utf8mb4',
                      cursorclass=pymysql.cursors.DictCursor)
 cursor = connection.cursor()
+
+@app.route('/download')
+def return_kivy_file():
+    try:
+        return send_file('apk/main__armeabi-v7a-0.1-armeabi-v7a-debug.apk', attachment_filename='freebet.apk')
+    except FileNotFoundError:
+        abort(404)
 
 @app.route('/sports', methods=['GET'])
 def sports():
