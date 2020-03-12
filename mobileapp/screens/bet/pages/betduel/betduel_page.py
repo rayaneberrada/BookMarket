@@ -20,7 +20,7 @@ class PrivateBetPage(GridLayout):
         self.search_params = search_params
         self.bind(minimum_height=self.setter('height'))
         UrlRequest('http://206.189.118.233/0/rencontres?private=True', on_success=self.display_message,
-                              on_failure=self.display_message, on_error=self.display_message,)
+                    on_failure=self.display_message, on_error=self.display_message,)
 
     def add_to_view(self, req, result):
         """

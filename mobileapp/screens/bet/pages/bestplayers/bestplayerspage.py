@@ -11,7 +11,7 @@ class BestPlayerPage(GridLayout):
     """
     Class managin the request and display of the biggest winners
     """
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super(BestPlayerPage, self).__init__(**kwargs)
         self.cols = 1
         self.bind(minimum_height=self.setter('height'))
@@ -25,6 +25,6 @@ class BestPlayerPage(GridLayout):
         place = 1
         for value in result["winners"]:
             description = value["nom"] + " est " + str(place) + " avec un total de " + str(value["argent"])
-            winner = Label(text=description, size_hint_y= None)
+            winner = Label(text=description, size_hint_y=None)
             self.add_widget(winner)
             place += 1
