@@ -17,11 +17,18 @@ cursor = connection.cursor()
 @app.route('/download')
 def return_kivy_file():
     try:
+<<<<<<< HEAD
         return send_file('apk/main__armeabi-v7a-0.1-armeabi-v7a-debug.apk', as_attachment=True)
     except FileNotFoundError:
         abort(404)
 
 
+=======
+        return send_file('apk/main__armeabi-v7a-0.1-armeabi-v7a-debug.apk', attachment_filename='freebet.apk')
+    except FileNotFoundError:
+        abort(404)
+
+>>>>>>> fba1cc3a79b414e730b2f5ce0a3f48446df1aaff
 @app.route('/sports', methods=['GET'])
 def sports():
     """
