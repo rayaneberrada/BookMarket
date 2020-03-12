@@ -1,10 +1,11 @@
 """
 This file test the code contained in screens/bet/bettingscreen.py
 """
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from kivy.lang.builder import Builder
 from kivy.uix.screenmanager import ScreenManager
+
 from screens.bet.bettingscreen import BettingScreen
 from  screens.bet.pages.bestplayers.bestplayerspage import BestPlayerPage
 from  screens.bet.pages.bet.betpage import BetPage
@@ -14,24 +15,15 @@ from  screens.bet.buttons.buttons import GoBackward, SubmitButton
 
 Builder.load_file('tests/screens_test/bettingscreen_test/bettingscreen_test.kv')
 
-class FakeScreen:
-    """
-    Class containing the reference to the fake current screen displayed by the kivy app
-    """
-    current = "register"
-    screens = [1, 2, 3]
-
-class FakeManager(ScreenManager):
-    """
-    Class managing the fake screen
-    """
-    display = FakeScreen()
 
 class TestBettingScreen:
     """
     This class contain all the necessary test to check all the methods from
     BettingScreen are following the right behavior.
     """
+    FakeManager = Mock()
+    FakeManager.display.current = "register"
+    #It represents the three screens added to the fake manager (login,registering,betting)
     object_to_test = BettingScreen(FakeManager(), "fake_user", 1000)
 
     def test_create_bets_page(self):
@@ -205,13 +197,14 @@ class TestBettingScreen:
         """
         Check empty_args return the right output
         """
-        assert self.object_to_test.empty_args().content.text == 'Saisissez une réponse'
+        assert self.object_to_test.empty_args().content.text == 'Faites un choix'
 
     def test_logout(self):
         """
         Check that when the logout is called, the user is sent on the right screen
         and the functionnalities widget is destroyed
         """
+        self.object_to_test.screenmanager.display.screens = [1, 2, 3]
         self.object_to_test.logout()
-        assert len(self.object_to_test.screenmanager.display.screens) == 2
+        assert self.object_to_test.screenmanager.display.screens == [1, 2]
         assert self.object_to_test.screenmanager.display.current == "login"

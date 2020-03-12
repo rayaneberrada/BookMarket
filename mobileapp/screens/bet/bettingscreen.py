@@ -6,7 +6,6 @@ To manage the visual display of the betting screen, check bettingscreen.kv.
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
-from kivy.uix.textinput import TextInput
 from kivy.uix.gridlayout import GridLayout
 
 from  screens.bet.pages.betduel.betduel_page import PrivateBetPage
@@ -15,18 +14,6 @@ from  screens.bet.pages.bet.betpage import BetPage
 from  screens.bet.pages.match.matchpage import MatchPage
 from  screens.bet.pages.matchselection.selectionpages import SportPage, RegionPage, LeaguePage
 from  screens.bet.buttons.buttons import GoBackward, SubmitButton
-
-class Search(GridLayout):
-    def __init__(self, player, object_to_search, **kwargs):
-        super(Search, self).__init__(**kwargs)
-        self.player = player
-        self.object_to_search = object_to_search
-
-    def update_private_bets(self, object_to_search):
-        self.player.ids.pages.remove_widget(self.player.pages[1])
-        self.player.pages.pop()
-        self.player.pages.append(self.object_to_search(self.player, self.ids.search_input.text))
-        self.player.ids.pages.add_widget(self.player.pages[1])
 
 class BettingScreen(Screen):
     """
@@ -167,9 +154,9 @@ class BettingScreen(Screen):
         Raise a popup widget when the user doesn't chose any league or region
         and make a request.
         """
-        pop = Popup(title='Invalid Request',
-                    content=Label(text='Saisissez une réponse'),
-                    size_hint=(None, None), size=(250, 250))
+        pop = Popup(title='',
+                    content=Label(text='Faites un choix'),
+                    size_hint=(None, None), size=(self.width * 0.7, self.height * 0.4))
         pop.open()
 
         return pop
@@ -206,4 +193,22 @@ class BettingScreen(Screen):
         self.screenmanager.display.screens.pop()
         self.screenmanager.display.current = "login"
 
+class Search(GridLayout):
+    """
+    Class creating and managing the search of specific widgets among ones returnd by
+    a request
+    """
+    def __init__(self, player, object_to_search, **kwargs):
+        super(Search, self).__init__(**kwargs)
+        self.player = player
+        self.object_to_search = object_to_search
 
+    def update_private_bets(self):
+        """
+        It removes the page and create a new one adding  to itonly widgets containing
+        infos specified in object_to_search.
+        """
+        self.player.ids.pages.remove_widget(self.player.pages[1])
+        self.player.pages.pop()
+        self.player.pages.append(self.object_to_search(self.player, self.ids.search_input.text))
+        self.player.ids.pages.add_widget(self.player.pages[1])

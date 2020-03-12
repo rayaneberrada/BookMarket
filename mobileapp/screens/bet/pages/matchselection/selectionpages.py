@@ -12,7 +12,7 @@ from . import selectableLabel
 class SportPage(RecycleView):
     """
     This class manage the display and choice of functionnalities and sports we want
-    to see the regions having bets available for.
+    to see depending of the the regions and competitions having bets available for.
     """
     def __init__(self, view_manager, **kwargs):
         super(SportPage, self).__init__(**kwargs)
@@ -21,21 +21,22 @@ class SportPage(RecycleView):
         self.private_view = view_manager.create_private_bets_page
         self.bets_view = view_manager.create_bets_page
         self.winners_view = view_manager.create_winners_page
+        #view_manager contain BettingScreen so that we can bind the  page creation functions in it
+        #to the buttons created by sport page and are refering to the different functionnalities.
         self.request_json()
 
     def request_json(self):
         """
-        Request on our API the sport avaialble for betting
+        Request on our API the sports avaialbles for betting
         """
         UrlRequest('http://206.189.118.233/sports', self.parse_json)
 
     def parse_json(self, req, result):
         """
         Parse and add to our view the sports we received in answer and also add the button
-        to request all the bets done by the user since the profile exist and the best players
-        of the app.
+        to request all the bets done by the user since the profile exist,the best players
+        of the app and the bets created by users.
         """
-        print("yes")
         self.data = []
         for value in result["sports"]:
             self.data.append({"text" : value['nom'], "name" : value["nom"],
@@ -78,8 +79,8 @@ class LeaguePage(RecycleView):
         self.data = []
         self.player = player
         self.args = ""
-        UrlRequest("http://206.189.118.233/{}/competitions?".format(self.player.sport_chosen) + request_args,
-                   self.parse_json)
+        UrlRequest("http://206.189.118.233/{}/competitions?".format(self.player.sport_chosen) +
+                   request_args, self.parse_json)
 
     def parse_json(self, req, result):
         """

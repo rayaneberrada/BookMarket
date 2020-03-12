@@ -19,8 +19,8 @@ class PrivateBetPage(GridLayout):
         self.player = player
         self.search_params = search_params
         self.bind(minimum_height=self.setter('height'))
-        UrlRequest('http://206.189.118.233/0/rencontres?private=True', on_success=self.add_to_view,
-                          on_failure=self.fail)
+        UrlRequest('http://206.189.118.233/0/rencontres?private=True', on_success=self.display_message,
+                              on_failure=self.display_message, on_error=self.display_message,)
 
     def add_to_view(self, req, result):
         """
@@ -40,8 +40,29 @@ class PrivateBetPage(GridLayout):
                 else:
                     continue
 
-    def fail(self, req, result):
-        print("it failed")
+    def display_message(self, req, result):
+        """
+        Function displaying the answer from the server.
+        Otherwiser display an error message if returned by the server, or a connexion issue
+        if the server couldn't be reached
+        """
+        if "success_message" in result:
+            return self.popup_message(result["success_message"])
+        elif "error_message" in result:
+            return self.popup_message(result["error_message"])
+        else:
+            return self.popup_message("Connexion avec le serveur impossible")
+
+    def popup_message(self, message):
+        """
+        Popup displayed to the user showing the message used in argument.
+        """
+        message = Popup(title="",
+                        content=Label(text=message),
+                        size_hint=(None, None), size=(self.width*0.7, self.height*0.4))
+        message.open()
+        return message.content.text
+        #It returns text to help for testing
 
 class PrivateMatch(GridLayout):
     """
@@ -66,7 +87,7 @@ class PrivateMatch(GridLayout):
                 bet = int(self.ids.input_amount.text)
                 if self.player.money >= bet:
                     print(bet, self.max_bet)
-                    if self.max_bet > bet:
+                    if self.max_bet >= bet:
                         self.max_bet -= int(bet)
                         self.ids.mise.text = "mise maximale: " + str(self.max_bet)
                         headers = {"Content-Type": "application/json"}
@@ -119,9 +140,9 @@ class PrivateMatch(GridLayout):
         already begun
         """
         if "error_message" in result:
-            pop = Popup(title='Invalid Form',
+            pop = Popup(title='',
                         content=Label(text=result["error_message"]),
-                        size_hint=(None, None), size=(250, 250))
+                        size_hint=(None, None), size=(self.width * 0.7, self.height * 0.4))
 
             pop.open()
             return pop
@@ -130,9 +151,9 @@ class PrivateMatch(GridLayout):
         """
         Display a message to the user
         """
-        pop = Popup(title='Invalid Form',
+        pop = Popup(title='',
                     content=Label(text=message),
-                    size_hint=(None, None), size=(250, 250))
+                    size_hint=(None, None), size=(self.width * 0.7, self.height * 0.4))
 
         pop.open()
         return pop

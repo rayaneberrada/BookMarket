@@ -17,8 +17,8 @@ class TestSportPage:
     @patch("kivy.network.urlrequest.UrlRequest")
     def test_request(self, request_mock):
         """
-        Check that a request is sent and that the method parse the code in
-        the expected way
+        Check that a request is sent and that the method parse the informations
+        returned in the expeted way
         """
         response = {
             "sports":[{"nom":"Football", "id":1},
@@ -40,8 +40,8 @@ class TestRegionPage:
     @patch("kivy.network.urlrequest.UrlRequest")
     def test_request(self, request_mock):
         """
-        Check that a request is sent and that the method parse the code in
-        the expected way
+        Check that a request is sent and that the method parse the informations
+        returned in the expeted way
         """
         response = {
             "regions":["France", "Allemagne", "Espagne"]
@@ -61,8 +61,8 @@ class TestLeaguePage:
     @patch("kivy.network.urlrequest.UrlRequest")
     def test_request(self, request_mock):
         """
-        Check that a request is sent and that the method parse the code in
-        the expected way
+        Check that a request is sent and that the method parse the informations
+        returned in the expeted way
         """
         response = {
             "competitions":["Ligue 1", "Ligue 2"]

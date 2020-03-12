@@ -11,7 +11,7 @@ from kivy.network.urlrequest import UrlRequest
 
 class MatchPage(GridLayout):
     """
-    Class managing and containing the matcheds requested by the user
+    Class managing and containing the matches requested by the user
     """
     def __init__(self, player, **kwargs):
         super(MatchPage, self).__init__(**kwargs)
@@ -34,7 +34,7 @@ class MatchPage(GridLayout):
 
 class Match(GridLayout):
     """
-    Class building and managinf  functionnalities related to the matches
+    Class building and managing  functionnalities related to the matches
     """
     def __init__(self, player, **kwargs):
         super(Match, self).__init__(**kwargs)
@@ -103,9 +103,9 @@ class Match(GridLayout):
         already begun
         """
         if "error_message" in result:
-            pop = Popup(title='Invalid Form',
+            pop = Popup(title='',
                         content=Label(text=result["error_message"]),
-                        size_hint=(None, None), size=(250, 250))
+                        size_hint=(None, None), size=(self.width * 0.7, self.height * 0.5))
 
             pop.open()
             return pop
@@ -114,9 +114,10 @@ class Match(GridLayout):
         """
         Display a message to the user
         """
-        pop = Popup(title='Invalid Form',
+        pop = Popup(title='',
                     content=Label(text=message),
-                    size_hint=(None, None), size=(250, 250))
+                    size_hint=(None, None), size=(self.width * 0.7, self.height * 0.5))
+
 
         pop.open()
         return pop
@@ -158,11 +159,18 @@ class BetCreation(Popup):
             self.ids.draw.text = draw
 
     def save_bet(self):
+        """
+        Create a bet checking that the user entered numbers for odd and bet,
+        that the user can afford paying the complete lost of this bet and that
+        one of the outcome of the match has been selected to create the bet.
+        If it has all been respected, the request is sent to the API to create
+        the bet.
+        """
         if self.ids.input_money.text.isdigit() and self.ids.input_odd.text:
             self.bet_limit = int(self.ids.input_money.text)
             try:
-                self.odd = float(self.ids.input_odd.text.replace(",","."))
-                if 1.0 > self.odd:
+                self.odd = float(self.ids.input_odd.text.replace(",", "."))
+                if self.odd < 1.0:
                     raise ValueError
                 if self.odd*self.bet_limit > self.player.money:
                     self.ids.error.text = "Vous n'avez pas les fonds suffisants"
@@ -176,9 +184,9 @@ class BetCreation(Popup):
                             self.ids.error.text = ""
                             headers = {"Content-Type": "application/json"}
                             params = json.dumps({"bet":int(self.bet_limit), "odd":self.odd, "user_id": self.player.username,
-                                        "match_id": self.id, "team_selected": selection})
+                                                 "match_id": self.id, "team_selected": selection})
                             return UrlRequest('http://206.189.118.233/betexchange', on_success=self.update_player, on_failure=self.fail_to_save,
-                                    req_body=params, req_headers=headers)
+                                              req_body=params, req_headers=headers)
                     self.ids.error.text = "Vous devez choisir un résultat"
             except ValueError:
                 self.ids.error.text = "Vous devez entrer un nombre entier ou décimal supérieur à 1 dans côte"
@@ -186,19 +194,27 @@ class BetCreation(Popup):
             self.ids.error.text = "Vous devez entrer un nombre entier supérieur à 0 dans mise"
 
     def update_player(self, req, result):
+        """
+        When the request is a success, the popup is closed, the user money is updated
+        and a popup displaying the message returned by the API apperas
+        """
         self.dismiss()
         self.player.money -= int(self.odd)*int(self.bet_limit)
         self.player.ids.amount.text = "Solde: " + str(self.player.money)
-        pop = Popup(title='Invalid Form',
+        pop = Popup(title='',
                     content=Label(text=result["succes_message"]),
-                    size_hint=(None, None), size=(250, 250))
+                    size_hint=(None, None), size=(self.width * 0.7, self.height * 0.5))
         pop.open()
         return pop
 
     def fail_to_save(self, req, result):
+        """
+        When the request is a failure, the popup is closed and a popup displaying the
+        message returned by the API apperas
+        """
         self.dismiss()
-        pop = Popup(title='Invalid Form',
+        pop = Popup(title='',
                     content=Label(text=result["error_message"]),
-                    size_hint=(None, None), size=(250, 250))
+                    size_hint=(None, None), size=(self.width * 0.7, self.height * 0.5))
         pop.open()
         return pop

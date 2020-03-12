@@ -1,33 +1,24 @@
 """
-This file test the code contained in registerscreen.py
+This file test the code contained in loginscreen.py
 """
 import pytest
+from unittest.mock import Mock, patch
 
 from kivy.lang.builder import Builder
 
 from kivy.uix.screenmanager import ScreenManager
-from screens.login.loginscreen import LoginScreen, wrong_request, invalid_form
+from screens.login.loginscreen import LoginScreen
 
 Builder.load_file('tests/screens_test/loginscreen_test/loginscreen_test.kv')
 
-class FakeBettingScreen(ScreenManager):
-    """
-    Class containing the reference to the fake current screen displayed by the kivy app
-    """
-    current = "login"
-
-class FakeManager(ScreenManager):
-    """
-    Class managing the fake screen
-    """
-    display = FakeBettingScreen
 
 class TestLoginScreen:
     """
     We instantiate the RegisterScreen class with a fake ScreenManager so that we can check it would
     supposely move to the login screen once the user is registered
     """
-    object_to_test = LoginScreen(FakeManager())
+    FakeManager = Mock()
+    object_to_test = LoginScreen(FakeManager)
 
     @pytest.mark.parametrize("username, password", [("", ""), ("Username", ""), ("", "Password")])
     def test_login_account_empty_credentials(self, username, password):
@@ -38,40 +29,44 @@ class TestLoginScreen:
         self.object_to_test.ids.password.text = password
         assert self.object_to_test.login() == "Veuillez remplir tous les champs"
 
-    def test_login_account_with_credentials(self):
+    @patch('screens.login.loginscreen.UrlRequest')
+    def test_login_account_with_credentials(self, mock_request):
+        """
+        Check that when the credentials exist, the UrlRequest is called
+        """
         self.object_to_test.ids.name.text = "username"
         self.object_to_test.ids.password.text = "password"
-        assert self.object_to_test.login().url == 'http://206.189.118.233/login'
+        self.object_to_test.login()
+        assert mock_request.called
 
-    def test_connect(self, monkeypatch):
-        def mock_connect():
-            self.object_to_test.ids.name.text = ""
-            self.object_to_test.ids.password.text = ""
-            self.object_to_test.screenmanager.display.current = "bets"
-
-        self.object_to_test.connect = mock_connect
-        self.object_to_test.connect()
+    def test_connect(self):
+        """
+        Check that the connect function empty the inputs and move to the bets screen
+        """
+        request_result = {"user_id":1, "money":1000}
+        self.object_to_test.connect(None, request_result)
         assert self.object_to_test.ids.name.text == ""
         assert self.object_to_test.ids.name.text == ""
         assert self.object_to_test.screenmanager.display.current == "bets"
 
     def test_register(self):
         """
-        Check the app moves to the login page and clean inputs entry once the user is registered
+        Check the app moves to the registering page and clean inputs entries when the user
+        click on the text to ask for the registering page
         """
         self.object_to_test.register()
         assert self.object_to_test.ids.name.text == ""
         assert self.object_to_test.ids.password.text == ""
         assert self.object_to_test.screenmanager.display.current == "register"
 
-def test_wrong_request():
-    """
-    Check that when the request send back an error message, it is correctly process
-    """
-    assert wrong_request(None, {"error_message" : "La requête a échoué"}) == "La requête a échoué"
+    def test_cant_connect(self):
+        """
+        Check that when the request send back an error message, the right error message is displayed
+        """
+        assert self.object_to_test.cant_connect(None, {"error_message" : "La requête a échoué"}) == "La requête a échoué"
 
-def test_invalid_form():
-    """
-    Check when the user forget to fill all entries, the correct message is displayed.
-    """
-    assert invalid_form() == "Veuillez remplir tous les champs"
+    def test_invalid_form(self):
+        """
+        Check when the user forget to fill all entries, the correct message is displayed.
+        """
+        assert self.object_to_test.invalid_form() == "Veuillez remplir tous les champs"
