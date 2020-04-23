@@ -21,7 +21,7 @@ To install the app, you have two available solutions:
   - python -m pip install git+https://github.com/kivy/kivy.git@master
   - pipenv install
   - cd mobileapp
-  -python main.py
+  - python main.py
 ```
 ## How to use
 Freebet contains two main functionnalities and and two main sort of bets.
