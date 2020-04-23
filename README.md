@@ -20,6 +20,8 @@ To install the app, you have two available solutions:
   - sudo apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
   - python -m pip install git+https://github.com/kivy/kivy.git@master
   - pipenv install
+  - cd mobileapp
+  -python main.py
 ```
 ## How to use
 Freebet contains two main functionnalities and and two main sort of bets.
